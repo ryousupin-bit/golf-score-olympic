@@ -206,9 +206,9 @@
   </style>
 </head>
 <body class="bg-[var(--background)] text-[var(--foreground)] antialiased m-0">
-  <div id="app" class="max-w-5xl w-full min-w-0 mx-auto px-2 sm:px-4 py-2.5 space-y-2.5">
+  <div id="app" class="max-w-5xl w-full min-w-0 mx-auto px-2 sm:px-4 py-1.5 sm:py-2.5 space-y-1.5 sm:space-y-2.5">
     <!-- Compact Modern Header -->
-    <header class="hero rounded-2xl px-3 sm:px-3.5 py-2.5 sm:py-3 space-y-2">
+    <header class="hero rounded-2xl px-3 sm:px-3.5 py-2 sm:py-3 space-y-1.5 sm:space-y-2">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center justify-between gap-2 w-full sm:w-auto min-w-0">
           <div class="flex items-center gap-2 min-w-0">
@@ -989,7 +989,7 @@
         const active = idx === hIdx;
         const isP3 = hm.p === 3;
         return `
-          <button onclick="selectHole(${idx})" class="pill-chip relative flex-1 min-w-0 h-7 rounded-md sm:rounded-lg text-[11px] font-bold tabular-nums flex items-center justify-center leading-none ${
+          <button onclick="selectHole(${idx})" class="pill-chip relative flex-1 min-w-0 h-6 sm:h-7 rounded-md sm:rounded-lg text-[10.5px] sm:text-[11px] font-bold tabular-nums flex items-center justify-center leading-none ${
             active
               ? 'bg-emerald-600 text-white shadow-sm'
               : hasActivity
@@ -1003,7 +1003,7 @@
       };
 
       const holeStrip = `
-        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0.5 w-full">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-0.5 w-full">
           <div class="flex items-center gap-0.5 flex-1 min-w-0">
             <span class="w-7 sm:w-auto text-[9px] font-bold uppercase text-[var(--muted-foreground)] pr-0.5 shrink-0">${variant.outLabel || 'OUT'}</span>
             ${variant.holes.slice(0, 9).map((hm, i) => renderHoleBtn(hm, i)).join('')}
@@ -1033,7 +1033,7 @@
           const count = stats[pIdx].counts[m.key];
           const isReach = state.rules.kanEnabled && count > 0 && count % 4 === 3;
           return `
-            <button onclick="toggleMedal(${hIdx}, '${m.key}', ${pIdx})" class="pill-chip px-2 py-0.5 rounded-full text-[11px] font-bold border flex items-center gap-0.5 ${
+            <button onclick="toggleMedal(${hIdx}, '${m.key}', ${pIdx})" class="pill-chip px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold border flex items-center gap-0.5 whitespace-nowrap ${
               isMine
                 ? `${m.cls} shadow-sm`
                 : isOther
@@ -1050,7 +1050,7 @@
         const nameCount = stats[pIdx].counts.name;
         const nameReach = state.rules.nameKanEnabled && nameCount > 0 && nameCount % 4 === 3;
         const nameBtn = state.rules.nameEnabled ? `
-          <button onclick="toggleName(${hIdx}, ${pIdx})" class="pill-chip px-2 py-0.5 rounded-full text-[11px] font-bold border flex items-center gap-0.5 ${
+          <button onclick="toggleName(${hIdx}, ${pIdx})" class="pill-chip px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold border flex items-center gap-0.5 whitespace-nowrap ${
             nameActive
               ? 'medal-name shadow-sm'
               : 'bg-[var(--card)] border-[var(--border)] text-[var(--muted-foreground)] hover:text-red-500 hover:border-red-400/50'
@@ -1064,7 +1064,7 @@
         const npMine = hData.nearPin === pIdx;
         const npOther = typeof hData.nearPin === 'number' && !npMine;
         const nearPinBtn = (isPar3 && state.rules.nearPinEnabled) ? `
-          <button onclick="setNearPin(${hIdx}, ${pIdx})" class="pill-chip px-2 py-0.5 rounded-full text-[11px] font-bold border flex items-center gap-0.5 ${
+          <button onclick="setNearPin(${hIdx}, ${pIdx})" class="pill-chip px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold border flex items-center gap-0.5 whitespace-nowrap ${
             npMine
               ? 'medal-np shadow-sm'
               : npOther
@@ -1085,7 +1085,7 @@
              </select>`;
 
         return `
-          <div class="surface-subtle rounded-xl p-2 sm:p-2.5 space-y-2 min-w-0">
+          <div class="surface-subtle rounded-xl p-2 sm:p-2.5 space-y-1.5 sm:space-y-2 min-w-0">
             <!-- 上段: 名前 + スコア + パット を1行に -->
             <div class="flex items-center justify-between gap-1.5 sm:gap-2 min-w-0">
               <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
@@ -1102,7 +1102,7 @@
                 <!-- 打数 -->
                 <div class="flex items-center gap-0.5 sm:gap-1">
                   <button onclick="adjustScore(${hIdx}, ${pIdx}, -1)" class="btn-stepper w-7 h-7 rounded-full bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500 font-bold text-sm flex items-center justify-center">−</button>
-                  <div class="w-8 sm:w-9 h-8 flex flex-col items-center justify-center tabular-nums ${scoreCls}">
+                  <div class="w-8 sm:w-9 h-7 sm:h-8 flex flex-col items-center justify-center tabular-nums ${scoreCls}">
                     <span class="text-sm leading-none">${sc}</span>
                     <span class="text-[9px] leading-none opacity-75 mt-0.5">${diffLabel}</span>
                   </div>
@@ -1120,7 +1120,7 @@
             </div>
 
             <!-- 下段: オリンピックピル1行 -->
-            <div class="flex flex-wrap items-center gap-1 pt-1.5 border-t border-[var(--border)]">
+            <div class="flex flex-wrap items-center gap-[3px] sm:gap-1 pt-1.5 border-t border-[var(--border)]">
               ${medalBtns}
               ${nameBtn}
               ${nearPinBtn}
@@ -1132,13 +1132,13 @@
       // Par3 NP 該当あり / 該当なし セグメント切替 (初期表示: 該当なし)
       const isNpNone = hData.nearPin === null || hData.nearPin === 'carry';
       const par3InlineBtn = (isPar3 && state.rules.nearPinEnabled) ? `
-        <div class="inline-flex items-center gap-1.5 pl-2 pr-1 py-0.5 rounded-full surface-subtle text-[11px] max-w-full">
+        <div class="inline-flex items-center gap-1.5 pl-2 pr-0.5 py-0.5 rounded-full surface-subtle text-[10.5px] sm:text-[11px] max-w-full">
           <span class="font-bold whitespace-nowrap">🎯NP +${npMeta.effectivePts}${npMeta.multiplier > 1 ? `<span class="text-amber-600 dark:text-amber-400 ml-0.5">(${npMeta.multiplier}倍)</span>` : ''}</span>
           <div class="inline-flex items-center rounded-full bg-[var(--background)] p-0.5 border border-[var(--border)] shrink-0">
-            <button onclick="setNearPinMode(${hIdx}, 'has')" class="px-2 py-0.5 rounded-full text-[10px] font-bold transition-all whitespace-nowrap ${
+            <button onclick="setNearPinMode(${hIdx}, 'has')" class="px-2 py-0.5 rounded-full text-[10px] font-bold leading-none transition-all whitespace-nowrap ${
               !isNpNone ? 'bg-emerald-600 text-white shadow-xs' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
             }">該当あり</button>
-            <button onclick="setNearPinMode(${hIdx}, 'none')" class="px-2 py-0.5 rounded-full text-[10px] font-bold transition-all whitespace-nowrap ${
+            <button onclick="setNearPinMode(${hIdx}, 'none')" class="px-2 py-0.5 rounded-full text-[10px] font-bold leading-none transition-all whitespace-nowrap ${
               isNpNone ? 'bg-amber-500 text-white shadow-xs' : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
             }">該当なし</button>
           </div>
@@ -1146,12 +1146,12 @@
       ` : '';
 
       return `
-        <div class="surface-card rounded-2xl p-2.5 sm:p-3 space-y-2.5">
+        <div class="surface-card rounded-2xl p-2 sm:p-3 space-y-2 sm:space-y-2.5">
           <!-- 18H ナビバー -->
           ${holeStrip}
 
           <!-- ホール情報 + 前後移動バー -->
-          <div class="py-2 border-y border-[var(--border)] space-y-1.5">
+          <div class="py-1.5 sm:py-2 border-y border-[var(--border)] space-y-1.5">
             <div class="flex items-center justify-between gap-1.5">
               <button onclick="selectHole(${Math.max(0, hIdx - 1)})" ${hIdx === 0 ? 'disabled' : ''} class="pill-chip px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold surface-subtle disabled:opacity-35 shrink-0 whitespace-nowrap">
                 ← 前
@@ -1173,7 +1173,7 @@
           </div>
 
           <!-- 4人分のスコア＋オリンピック 2x2 グリッド -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5 sm:gap-2.5">
             ${playerRows}
           </div>
         </div>
