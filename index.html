@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="TAIHEIYO GOLF" />
-  <meta id="themeColorMeta" name="theme-color" content="#f6f7f6" />
+  <meta id="themeColorMeta" name="theme-color" content="#f2f4f3" />
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
   <link rel="manifest" href="./manifest.json" />
   <link id="appFavicon" rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
@@ -28,17 +28,17 @@
       -webkit-user-select: none;
     }
     body {
-      padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4px);
+      padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
       padding-left: env(safe-area-inset-left, 0px);
       padding-right: env(safe-area-inset-right, 0px);
     }
     :root {
       --background: #f2f4f3;
       --card: #ffffff;
-      --border: #d5dcd8;
-      --foreground: #141c18;
-      --muted-foreground: #4c5751;
+      --border: #cfd7d2;
+      --foreground: #111815;
+      --muted-foreground: #3f4a44;
       --primary: #156445;
       --primary-foreground: #ffffff;
       color-scheme: light;
@@ -46,9 +46,9 @@
     html.dark {
       --background: #111413;
       --card: #1a1f1d;
-      --border: #2f3733;
-      --foreground: #eff3f0;
-      --muted-foreground: #a5b0aa;
+      --border: #323b36;
+      --foreground: #f2f6f3;
+      --muted-foreground: #b2bdb7;
       --primary: #6fd8a4;
       --primary-foreground: #000000;
       color-scheme: dark;
@@ -75,7 +75,6 @@
       --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
       font-family: "Inter", "SF Pro Text", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
       letter-spacing: 0.01em;
-      -webkit-font-smoothing: antialiased;
       background-color: var(--background);
       min-height: 100vh;
     }
@@ -84,14 +83,14 @@
 
     h1, h2, h3 { letter-spacing: 0.02em; }
 
-    /* Crisp elevated surfaces without hazy top washout */
+    /* Crisp elevated surfaces without blur or washout */
     .surface-card {
       background: var(--card);
       border: 1px solid var(--border);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
     .surface-subtle {
-      background: color-mix(in srgb, var(--background) 65%, var(--card));
+      background: color-mix(in srgb, var(--background) 60%, var(--card));
       border: 1px solid var(--border);
       transition: border-color 0.18s ease, background-color 0.18s ease;
     }
@@ -161,21 +160,15 @@
     .btn-gold:hover { filter: brightness(1.06); }
 
     /* Segmented tab control */
-    .tab-btn { color: var(--foreground); opacity: 0.78; transition: background-color 0.2s var(--ease-out), color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease; }
-    .tab-btn:hover { opacity: 1; }
+    .tab-btn { color: var(--foreground); transition: background-color 0.15s ease, color 0.15s ease; }
     .tab-btn.tab-active {
-      opacity: 1;
       background: linear-gradient(180deg, var(--brand-500), var(--brand-700));
       color: #ffffff;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 1px 2px rgba(0, 0, 0, 0.16), 0 6px 14px -6px rgba(15, 77, 53, 0.5);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 1px 2px rgba(0, 0, 0, 0.16);
     }
 
-    /* View transition on tab change */
-    @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-    .view-enter > * { animation: rise 0.34s var(--ease-out) both; }
-    .view-enter > *:nth-child(2) { animation-delay: 0.04s; }
-    .view-enter > *:nth-child(3) { animation-delay: 0.08s; }
-    @media (prefers-reduced-motion: reduce) { .view-enter > * { animation: none; } }
+    /* Keep tab switches crisp without fade/translate blur */
+    .view-enter > * { animation: none; }
 
     /* Golf score indicators */
     .score-eagle { box-shadow: inset 0 0 0 2px #d97706, inset 0 0 0 4px var(--card), inset 0 0 0 5.5px #d97706; border-radius: 9999px; color: #d97706; font-weight: 800; }
@@ -859,7 +852,7 @@
       root.classList.toggle('dark', dark);
       root.classList.toggle('light', !dark);
       const meta = document.getElementById('themeColorMeta');
-      if (meta) meta.setAttribute('content', dark ? '#111413' : '#f6f7f6');
+      if (meta) meta.setAttribute('content', dark ? '#111413' : '#f2f4f3');
       document.querySelectorAll('#themeToggleBtn, #setupThemeToggleBtn').forEach(btn => {
         btn.textContent = dark ? '☀️' : '🌙';
         btn.title = dark ? 'ライトモードに切替' : 'ダークモードに切替';
@@ -1256,12 +1249,12 @@
         const active = idx === hIdx;
         const isP3 = hm.p === 3;
         return `
-          <button onclick="selectHole(${idx})" class="pill-chip relative flex-1 min-w-0 h-6 sm:h-7 rounded-md sm:rounded-lg text-[10.5px] sm:text-[11px] font-bold tabular-nums flex items-center justify-center leading-none ${
+          <button onclick="selectHole(${idx})" class="pill-chip relative flex-1 min-w-0 h-6 sm:h-7 rounded-md sm:rounded-lg text-[11px] font-bold tabular-nums flex items-center justify-center leading-none ${
             active
               ? 'bg-emerald-600 text-white shadow-sm'
               : hasActivity
                 ? 'surface-subtle text-[var(--foreground)] ring-1 ring-emerald-500/50'
-                : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--background)]'
+                : 'text-[var(--foreground)] hover:bg-[var(--background)]'
           }">
             ${hm.n}
             ${isP3 ? `<span class="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full ${active ? 'bg-amber-300' : 'bg-emerald-500'}" title="Par 3"></span>` : ''}
@@ -1280,12 +1273,12 @@
       const holeStrip = `
         <div class="flex flex-col sm:flex-row sm:items-center gap-0.5 w-full">
           <div class="flex items-center gap-0.5 flex-1 min-w-0">
-            <span class="w-7 sm:w-auto text-[9px] font-bold uppercase text-[var(--muted-foreground)] pr-0.5 shrink-0">${firstHalfRow.label}</span>
+            <span class="w-7 sm:w-auto text-[10px] font-extrabold uppercase text-[var(--foreground)] pr-0.5 shrink-0">${firstHalfRow.label}</span>
             ${variant.holes.slice(firstHalfRow.start, firstHalfRow.end).map((hm, i) => renderHoleBtn(hm, firstHalfRow.start + i)).join('')}
           </div>
           <span class="hidden sm:inline-block w-px h-4 bg-[var(--border)] mx-1 shrink-0"></span>
           <div class="flex items-center gap-0.5 flex-1 min-w-0">
-            <span class="w-7 sm:w-auto text-[9px] font-bold uppercase text-[var(--muted-foreground)] pr-0.5 shrink-0">${secondHalfRow.label}</span>
+            <span class="w-7 sm:w-auto text-[10px] font-extrabold uppercase text-[var(--foreground)] pr-0.5 shrink-0">${secondHalfRow.label}</span>
             ${variant.holes.slice(secondHalfRow.start, secondHalfRow.end).map((hm, i) => renderHoleBtn(hm, secondHalfRow.start + i)).join('')}
           </div>
         </div>
