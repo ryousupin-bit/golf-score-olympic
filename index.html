@@ -620,6 +620,10 @@
       './avatars/dog-corgi.png'
     ];
 
+    const FIXED_DOG_AVATARS = {
+      'Matsu-san': './avatars/dog-poodle.png'
+    };
+
     const AVATAR_PALETTES = [
       'bg-emerald-600 text-white',
       'bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/35',
@@ -683,7 +687,14 @@
           : def.holes;
         const roundHistory = Array.isArray(parsed.roundHistory) ? parsed.roundHistory : [];
         const playerAvatars = (parsed.playerAvatars && typeof parsed.playerAvatars === 'object') ? parsed.playerAvatars : {};
-        const assignedDogAvatars = (parsed.assignedDogAvatars && typeof parsed.assignedDogAvatars === 'object') ? parsed.assignedDogAvatars : {};
+        const assignedDogAvatars = (parsed.assignedDogAvatars && typeof parsed.assignedDogAvatars === 'object') ? { ...parsed.assignedDogAvatars } : {};
+        // 固定アイコンと被るランダム割当を解消
+        const reservedSrcs = new Set(Object.values(FIXED_DOG_AVATARS));
+        Object.keys(assignedDogAvatars).forEach(pName => {
+          if (!FIXED_DOG_AVATARS[pName] && reservedSrcs.has(assignedDogAvatars[pName])) {
+            delete assignedDogAvatars[pName];
+          }
+        });
         const theme = ['system', 'light', 'dark'].includes(parsed.theme) ? parsed.theme : 'system';
         const hasEdits = holes.some(h =>
           h.scores.some(v => v !== null) ||
@@ -722,16 +733,25 @@
       if (state.playerAvatars && state.playerAvatars[name]) {
         return state.playerAvatars[name];
       }
+      if (FIXED_DOG_AVATARS[name]) {
+        return FIXED_DOG_AVATARS[name];
+      }
       if (!state.assignedDogAvatars) state.assignedDogAvatars = {};
-      if (state.assignedDogAvatars[name] && DOG_AVATAR_POOL.includes(state.assignedDogAvatars[name])) {
+      const reservedSrcs = new Set(Object.values(FIXED_DOG_AVATARS));
+      if (
+        state.assignedDogAvatars[name] &&
+        DOG_AVATAR_POOL.includes(state.assignedDogAvatars[name]) &&
+        !reservedSrcs.has(state.assignedDogAvatars[name])
+      ) {
         return state.assignedDogAvatars[name];
       }
-      // 他の参加中プレーヤーと被らないようにランダム割り当て
-      const usedByOthers = new Set(
-        state.players
+      // 固定アイコン・他の参加中プレーヤーと被らないようにランダム割り当て
+      const usedByOthers = new Set([
+        ...reservedSrcs,
+        ...state.players
           .filter(p => p !== name && state.assignedDogAvatars[p])
           .map(p => state.assignedDogAvatars[p])
-      );
+      ]);
       const candidates = DOG_AVATAR_POOL.filter(src => !usedByOthers.has(src));
       const pool = candidates.length > 0 ? candidates : DOG_AVATAR_POOL;
       const picked = pool[Math.floor(Math.random() * pool.length)];
