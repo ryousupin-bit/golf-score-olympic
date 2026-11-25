@@ -629,6 +629,7 @@
       return {
         courseId: 'gotenba',
         variantId: 'std',
+        startSide: 'out', // 'out' (1H->18H) | 'in' (10H->9H)
         roundDate: getTodayStr(),
         roundStarted: false,
         currentRoundId: null,
@@ -689,6 +690,7 @@
           }
         });
         const theme = ['system', 'light', 'dark'].includes(parsed.theme) ? parsed.theme : 'system';
+        const startSide = parsed.startSide === 'in' ? 'in' : 'out';
         const hasEdits = holes.some(h =>
           h.scores.some(v => v !== null) ||
           Object.values(h.medals).some(v => v !== null) ||
@@ -699,6 +701,7 @@
         return {
           ...def,
           ...parsed,
+          startSide,
           roundStarted,
           theme,
           rosterVersion: 2,
@@ -720,6 +723,20 @@
 
     function saveState() {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    }
+
+    function getHoleOrder() {
+      return state.startSide === 'in'
+        ? [9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 1, 2, 3, 4, 5, 6, 7, 8]
+        : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+    }
+
+    function getFirstHoleIdx() {
+      return state.startSide === 'in' ? 9 : 0;
+    }
+
+    function getLastHoleIdx() {
+      return state.startSide === 'in' ? 8 : 17;
     }
 
     function getPlayerAvatar(name) {
@@ -907,9 +924,12 @@
         settlementYen: 0
       }));
 
-      // 1. Par3 ニアピン & 2倍キャリー計算 (前半H1-H9 / 後半H10-H18 で必ずリセット)
+      // 1. Par3 ニアピン & 2倍キャリー計算 (前半 / 後半 で必ずリセット)
       const nearPinInfo = {}; // holeIdx -> { effectivePts, carryIn, multiplier, winner, status }
-      [ [0, 9, '前半 (OUT)'], [9, 18, '後半 (IN)'] ].forEach(([start, end, halfLabel]) => {
+      const halves = state.startSide === 'in'
+        ? [ [9, 18, '前半 (IN)'], [0, 9, '後半 (OUT)'] ]
+        : [ [0, 9, '前半 (OUT)'], [9, 18, '後半 (IN)'] ];
+      halves.forEach(([start, end, halfLabel]) => {
         let multiplier = 1;
         for (let i = start; i < end; i++) {
           const holeMeta = variant.holes[i];
@@ -1132,6 +1152,23 @@
               ${subSelectHtml}
             </div>
 
+            <!-- OUT / IN スタート選択 -->
+            <div class="space-y-1.5">
+              <span class="block text-xs font-bold text-[var(--muted-foreground)]">スタート</span>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="setStartSide('out')" class="py-2 rounded-xl text-xs font-extrabold border transition-all ${
+                  state.startSide !== 'in'
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                    : 'surface-subtle text-[var(--muted-foreground)]'
+                }">${escapeHtml(variant.outLabel || 'OUT')} スタート (1H〜)</button>
+                <button type="button" onclick="setStartSide('in')" class="py-2 rounded-xl text-xs font-extrabold border transition-all ${
+                  state.startSide === 'in'
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                    : 'surface-subtle text-[var(--muted-foreground)]'
+                }">${escapeHtml(variant.inLabel || 'IN')} スタート (10H〜)</button>
+              </div>
+            </div>
+
             <!-- 人数 & 同伴者 -->
             <div class="space-y-1.5">
               <div class="flex items-center justify-between">
@@ -1232,16 +1269,24 @@
         `;
       };
 
+      const isInStart = state.startSide === 'in';
+      const firstHalfRow = isInStart
+        ? { label: variant.inLabel || 'IN', start: 9, end: 18 }
+        : { label: variant.outLabel || 'OUT', start: 0, end: 9 };
+      const secondHalfRow = isInStart
+        ? { label: variant.outLabel || 'OUT', start: 0, end: 9 }
+        : { label: variant.inLabel || 'IN', start: 9, end: 18 };
+
       const holeStrip = `
         <div class="flex flex-col sm:flex-row sm:items-center gap-0.5 w-full">
           <div class="flex items-center gap-0.5 flex-1 min-w-0">
-            <span class="w-7 sm:w-auto text-[9px] font-bold uppercase text-[var(--muted-foreground)] pr-0.5 shrink-0">${variant.outLabel || 'OUT'}</span>
-            ${variant.holes.slice(0, 9).map((hm, i) => renderHoleBtn(hm, i)).join('')}
+            <span class="w-7 sm:w-auto text-[9px] font-bold uppercase text-[var(--muted-foreground)] pr-0.5 shrink-0">${firstHalfRow.label}</span>
+            ${variant.holes.slice(firstHalfRow.start, firstHalfRow.end).map((hm, i) => renderHoleBtn(hm, firstHalfRow.start + i)).join('')}
           </div>
           <span class="hidden sm:inline-block w-px h-4 bg-[var(--border)] mx-1 shrink-0"></span>
           <div class="flex items-center gap-0.5 flex-1 min-w-0">
-            <span class="w-7 sm:w-auto text-[9px] font-bold uppercase text-[var(--muted-foreground)] pr-0.5 shrink-0">${variant.inLabel || 'IN'}</span>
-            ${variant.holes.slice(9, 18).map((hm, i) => renderHoleBtn(hm, 9 + i)).join('')}
+            <span class="w-7 sm:w-auto text-[9px] font-bold uppercase text-[var(--muted-foreground)] pr-0.5 shrink-0">${secondHalfRow.label}</span>
+            ${variant.holes.slice(secondHalfRow.start, secondHalfRow.end).map((hm, i) => renderHoleBtn(hm, secondHalfRow.start + i)).join('')}
           </div>
         </div>
       `;
@@ -1364,6 +1409,13 @@
         </div>
       ` : '';
 
+      const holeOrder = getHoleOrder();
+      const orderPos = holeOrder.indexOf(hIdx);
+      const isFirstHole = orderPos <= 0;
+      const isLastHole = orderPos === holeOrder.length - 1;
+      const prevHoleIdx = isFirstHole ? hIdx : holeOrder[orderPos - 1];
+      const nextHoleIdx = isLastHole ? hIdx : holeOrder[orderPos + 1];
+
       return `
         <div class="surface-card rounded-2xl p-2 sm:p-3 space-y-2 sm:space-y-2.5">
           <!-- 18H ナビバー -->
@@ -1372,7 +1424,7 @@
           <!-- ホール情報 + 前後移動バー -->
           <div class="py-1.5 sm:py-2 border-y border-[var(--border)] space-y-1.5">
             <div class="flex items-center justify-between gap-1.5">
-              <button onclick="selectHole(${Math.max(0, hIdx - 1)})" ${hIdx === 0 ? 'disabled' : ''} class="pill-chip px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold surface-subtle disabled:opacity-35 shrink-0 whitespace-nowrap">
+              <button onclick="selectHole(${prevHoleIdx})" ${isFirstHole ? 'disabled' : ''} class="pill-chip px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold surface-subtle disabled:opacity-35 shrink-0 whitespace-nowrap">
                 ← 前
               </button>
 
@@ -1384,12 +1436,12 @@
                 <span class="text-[11px] sm:text-xs text-[var(--muted-foreground)] whitespace-nowrap"><strong class="text-[var(--foreground)]">${holeMeta.y}</strong>Y · HDCP ${holeMeta.h}</span>
               </div>
 
-              ${hIdx === 17 ? `
+              ${isLastHole ? `
                 <button onclick="finishRound()" class="btn-gold pill-chip px-3 py-1 rounded-lg text-xs font-extrabold shrink-0 whitespace-nowrap">
                   終了 🏁
                 </button>
               ` : `
-                <button onclick="selectHole(${Math.min(17, hIdx + 1)})" class="pill-chip px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold surface-subtle shrink-0 whitespace-nowrap">
+                <button onclick="selectHole(${nextHoleIdx})" class="pill-chip px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold surface-subtle shrink-0 whitespace-nowrap">
                   次 →
                 </button>
               `}
@@ -1402,7 +1454,7 @@
             ${playerRows}
           </div>
 
-          ${hIdx === 17 ? `
+          ${isLastHole ? `
             <button onclick="finishRound()"
               class="w-full btn-gold pill-chip py-2.5 rounded-xl text-sm font-extrabold shadow-sm">
               🏁 ラウンド終了・結果を見る
@@ -1498,18 +1550,23 @@
       };
 
       // 総合トータルサマリー (Parプリセット反映)
+      const isInStart = state.startSide === 'in';
+      const firstLabel = isInStart ? (variant.inLabel || 'IN') : (variant.outLabel || 'OUT');
+      const secondLabel = isInStart ? (variant.outLabel || 'OUT') : (variant.inLabel || 'IN');
       const totalParAll = variant.holes.reduce((a, b) => a + b.p, 0);
       const summaryRows = Array.from({ length: nPlayers }, (_, pIdx) => {
         const outSum = state.holes.slice(0, 9).reduce((acc, h, i) => acc + (h.scores[pIdx] !== null ? h.scores[pIdx] : variant.holes[i].p), 0);
         const inSum = state.holes.slice(9, 18).reduce((acc, h, i) => acc + (h.scores[pIdx] !== null ? h.scores[pIdx] : variant.holes[9 + i].p), 0);
+        const firstSum = isInStart ? inSum : outSum;
+        const secondSum = isInStart ? outSum : inSum;
         const total = outSum + inSum;
         const diff = total - totalParAll;
 
         return `
           <tr class="border-b border-[var(--border)] last:border-b-0">
             <td class="px-2 sm:px-3 py-2 text-sm font-bold truncate max-w-[115px] sm:max-w-none">${escapeHtml(state.players[pIdx])}</td>
-            <td class="px-1.5 sm:px-2.5 py-2 text-center text-sm tabular-nums">${outSum}</td>
-            <td class="px-1.5 sm:px-2.5 py-2 text-center text-sm tabular-nums">${inSum}</td>
+            <td class="px-1.5 sm:px-2.5 py-2 text-center text-sm tabular-nums">${firstSum}</td>
+            <td class="px-1.5 sm:px-2.5 py-2 text-center text-sm tabular-nums">${secondSum}</td>
             <td class="px-1.5 sm:px-2.5 py-2 text-center font-black text-base tabular-nums">${total}</td>
             <td class="px-1.5 sm:px-2.5 py-2 text-center text-sm tabular-nums font-bold ${diff < 0 ? 'text-emerald-600 dark:text-emerald-400' : diff > 0 ? 'text-amber-600 dark:text-amber-400' : ''}">${formatDiff(diff)}</td>
           </tr>
@@ -1518,8 +1575,8 @@
 
       return `
         <div class="space-y-4">
-          ${renderHalfTable(0, 9, variant.outLabel || 'OUT')}
-          ${renderHalfTable(9, 18, variant.inLabel || 'IN')}
+          ${isInStart ? renderHalfTable(9, 18, variant.inLabel || 'IN') : renderHalfTable(0, 9, variant.outLabel || 'OUT')}
+          ${isInStart ? renderHalfTable(0, 9, variant.outLabel || 'OUT') : renderHalfTable(9, 18, variant.inLabel || 'IN')}
 
           <div class="surface-card rounded-2xl overflow-hidden">
             <div class="px-3 py-1.5 border-b border-[var(--border)] flex flex-wrap items-center justify-between gap-1">
@@ -1531,8 +1588,8 @@
                 <thead>
                   <tr class="bg-[var(--background)] border-b border-[var(--border)] text-[var(--muted-foreground)]">
                     <th class="text-left px-2 sm:px-3 py-2 font-semibold">プレイヤー</th>
-                    <th class="px-1.5 sm:px-3 py-2 text-center font-semibold">${variant.outLabel || 'OUT'}</th>
-                    <th class="px-1.5 sm:px-3 py-2 text-center font-semibold">${variant.inLabel || 'IN'}</th>
+                    <th class="px-1.5 sm:px-3 py-2 text-center font-semibold">${firstLabel}</th>
+                    <th class="px-1.5 sm:px-3 py-2 text-center font-semibold">${secondLabel}</th>
                     <th class="px-1.5 sm:px-3 py-2 text-center font-semibold">TOTAL</th>
                     <th class="px-1.5 sm:px-3 py-2 text-center font-semibold">対PAR</th>
                   </tr>
@@ -1629,9 +1686,9 @@
         `;
       }).join('');
 
-      // Par3 ニアピン状況を横並びコンパクトカードに
-      const npCards = Object.entries(nearPinInfo).map(([idxStr, info]) => {
-        const idx = Number(idxStr);
+      // Par3 ニアピン状況を横並びコンパクトカードに（スタート順）
+      const npCards = getHoleOrder().filter(idx => nearPinInfo[idx]).map(idx => {
+        const info = nearPinInfo[idx];
         let badge = `<span class="text-[var(--muted-foreground)]">該当あり（未選択）</span>`;
         if (info.status === 'carry') badge = `<span class="font-bold text-amber-600 dark:text-amber-400">該当なし → 次2倍</span>`;
         else if (info.status === 'won') badge = `<span class="font-bold text-emerald-600 dark:text-emerald-400">${escapeHtml(state.players[info.winner])} +${info.effectivePts}</span>`;
@@ -1810,6 +1867,14 @@
                 </select>
               </div>
               ${subSelectHtml}
+              <div class="grid grid-cols-2 gap-1.5">
+                <button type="button" onclick="setStartSide('out')" class="py-1.5 rounded-lg text-[11px] font-bold border ${
+                  state.startSide !== 'in' ? 'bg-emerald-600 text-white border-emerald-600' : 'surface-subtle text-[var(--muted-foreground)]'
+                }">OUT スタート (1H〜)</button>
+                <button type="button" onclick="setStartSide('in')" class="py-1.5 rounded-lg text-[11px] font-bold border ${
+                  state.startSide === 'in' ? 'bg-emerald-600 text-white border-emerald-600' : 'surface-subtle text-[var(--muted-foreground)]'
+                }">IN スタート (10H〜)</button>
+              </div>
             </div>
 
             <div class="surface-card rounded-2xl p-3 space-y-2">
@@ -1989,6 +2054,19 @@
               ${subSelectHtml}
             </div>
 
+            <!-- OUT / IN スタート -->
+            <div class="space-y-1.5">
+              <span class="block font-bold text-[var(--muted-foreground)]">スタート</span>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="setModalStartSide('out')" class="py-1.5 rounded-xl text-xs font-extrabold border ${
+                  modalDraft.startSide !== 'in' ? 'bg-emerald-600 text-white border-emerald-600' : 'surface-subtle text-[var(--muted-foreground)]'
+                }">OUT スタート (1H〜)</button>
+                <button type="button" onclick="setModalStartSide('in')" class="py-1.5 rounded-xl text-xs font-extrabold border ${
+                  modalDraft.startSide === 'in' ? 'bg-emerald-600 text-white border-emerald-600' : 'surface-subtle text-[var(--muted-foreground)]'
+                }">IN スタート (10H〜)</button>
+              </div>
+            </div>
+
             <!-- 人数 & 同伴者 -->
             <div class="space-y-1.5">
               <div class="flex items-center justify-between">
@@ -2050,6 +2128,7 @@
         date: getTodayStr(),
         courseId: state.courseId,
         variantId: state.variantId,
+        startSide: state.startSide || 'out',
         playerCount: state.playerCount,
         players: [...state.players],
         savePrevious: hasCurrentRoundEdits()
@@ -2070,6 +2149,12 @@
       renderNewRoundModal();
     };
 
+    window.setModalStartSide = (side) => {
+      if (!modalDraft) return;
+      modalDraft.startSide = side === 'in' ? 'in' : 'out';
+      renderNewRoundModal();
+    };
+
     window.setModalPlayerCount = (cnt) => {
       if (!modalDraft) return;
       modalDraft.playerCount = cnt;
@@ -2084,12 +2169,13 @@
       state.roundDate = modalDraft.date || getTodayStr();
       state.courseId = modalDraft.courseId;
       state.variantId = modalDraft.variantId;
+      state.startSide = modalDraft.startSide === 'in' ? 'in' : 'out';
       state.playerCount = modalDraft.playerCount;
       state.players = [...modalDraft.players];
       state.players[0] = SELF_NAME;
       state.currentRoundId = null;
       state.holes = createEmptyHolesData();
-      state.currentHole = 0;
+      state.currentHole = getFirstHoleIdx();
       state.roundStarted = true;
       state.activeTab = 'hole';
       modalDraft = null;
@@ -2098,8 +2184,18 @@
       render();
     };
 
+    window.setStartSide = (side) => {
+      state.startSide = side === 'in' ? 'in' : 'out';
+      if (!state.roundStarted) {
+        state.currentHole = getFirstHoleIdx();
+      }
+      saveState();
+      render();
+    };
+
     window.startRound = () => {
       state.roundStarted = true;
+      state.currentHole = getFirstHoleIdx();
       state.activeTab = 'hole';
       saveState();
       render();
@@ -2150,6 +2246,7 @@
       const course = getCourse();
       const variant = getVariant();
       const nPlayers = state.playerCount;
+      const isInStart = state.startSide === 'in';
       const totalParAll = variant.holes.reduce((a, b) => a + b.p, 0);
       const { stats } = calculateOlympic();
       const rules = state.rules;
@@ -2186,6 +2283,9 @@
       const scoreRowsHtml = scoreRanking.map((r, idx) => {
         const medalMark = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`;
         const diffColor = r.diff < 0 ? 'text-emerald-600 dark:text-emerald-400' : r.diff > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-[var(--muted-foreground)]';
+        const halfSplitText = isInStart
+          ? `${variant.inLabel || 'IN'} ${r.inSum} · ${variant.outLabel || 'OUT'} ${r.outSum}`
+          : `${variant.outLabel || 'OUT'} ${r.outSum} · ${variant.inLabel || 'IN'} ${r.inSum}`;
         return `
           <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl surface-subtle">
             <div class="flex items-center gap-2 min-w-0">
@@ -2193,7 +2293,7 @@
               ${renderPlayerAvatar(r.name, r.pIdx, 'sm', false)}
               <div class="min-w-0">
                 <div class="font-extrabold text-sm truncate">${escapeHtml(r.name)}</div>
-                <div class="text-[11px] text-[var(--muted-foreground)] tabular-nums">${variant.outLabel || 'OUT'} ${r.outSum} · ${variant.inLabel || 'IN'} ${r.inSum}</div>
+                <div class="text-[11px] text-[var(--muted-foreground)] tabular-nums">${halfSplitText}</div>
               </div>
             </div>
             <div class="text-right tabular-nums shrink-0 leading-tight">
@@ -2275,7 +2375,7 @@
             </button>
             <button onclick="backFromSummary()"
               class="w-full py-2 rounded-xl text-xs font-bold surface-card text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
-              ← ホール18に戻って修正する
+              ← ホール${isInStart ? '9' : '18'}に戻って修正する
             </button>
           </div>
         </div>
@@ -2297,7 +2397,7 @@
     window.completeAndReturnToSetup = () => {
       showRoundResult = false;
       state.holes = createEmptyHolesData();
-      state.currentHole = 0;
+      state.currentHole = getFirstHoleIdx();
       state.currentRoundId = null;
       state.roundDate = getTodayStr();
       state.roundStarted = false;
