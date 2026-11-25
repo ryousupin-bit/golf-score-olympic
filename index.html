@@ -1084,9 +1084,9 @@
         ` : '';
 
         const playerNameHtml = pIdx === 0
-          ? `<span class="font-extrabold text-xs sm:text-sm tracking-tight block truncate">${escapeHtml(SELF_NAME)}</span>`
+          ? `<span class="font-extrabold text-base sm:text-lg tracking-tight block truncate">${escapeHtml(SELF_NAME)}</span>`
           : `<select aria-label="プレイヤー${pIdx + 1}選択" onchange="selectPlayerFromRoster(${pIdx}, this.value)"
-               class="bg-transparent font-bold text-xs sm:text-sm pr-0.5 py-0 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500/40 w-full max-w-[140px] truncate cursor-pointer">
+               class="bg-transparent font-extrabold text-base sm:text-lg pr-1 py-0 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500/40 w-full max-w-[170px] truncate cursor-pointer">
                ${rosterOptions.map(name => `<option value="${escapeHtml(name)}" ${name === state.players[pIdx] ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
              </select>`;
 
@@ -1095,10 +1095,10 @@
             <!-- 上段: 名前 + スコア を1行に -->
             <div class="flex items-center justify-between gap-2 min-w-0">
               <div class="flex items-center gap-2 min-w-0 flex-1">
-                <div class="w-6 h-6 rounded-full ${pIdx === 0 ? 'bg-emerald-600 text-white' : 'bg-[var(--card)] border border-[var(--border)] text-[var(--muted-foreground)]'} flex items-center justify-center text-[11px] font-extrabold shrink-0">${pIdx + 1}</div>
+                <div class="w-7 h-7 rounded-full ${pIdx === 0 ? 'bg-emerald-600 text-white' : 'bg-[var(--card)] border border-[var(--border)] text-[var(--muted-foreground)]'} flex items-center justify-center text-xs font-extrabold shrink-0">${pIdx + 1}</div>
                 <div class="min-w-0 flex-1 leading-tight">
                   ${playerNameHtml}
-                  <div class="text-[10px] text-[var(--muted-foreground)] tabular-nums">
+                  <div class="text-xs text-[var(--muted-foreground)] tabular-nums mt-0.5">
                     🏅 <strong class="${pTotalPts > 0 ? 'text-emerald-600 dark:text-emerald-400' : pTotalPts < 0 ? 'text-red-500' : 'text-[var(--foreground)]'}">${pTotalPts > 0 ? '+' : ''}${pTotalPts}pt</strong>
                   </div>
                 </div>
@@ -1106,12 +1106,12 @@
 
               <!-- 打数 -->
               <div class="flex items-center gap-1.5 shrink-0">
-                <button onclick="adjustScore(${hIdx}, ${pIdx}, -1)" class="btn-stepper w-8 h-8 rounded-full bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500 font-bold text-base flex items-center justify-center">−</button>
-                <div class="w-10 h-8 flex flex-col items-center justify-center tabular-nums ${scoreCls}">
-                  <span class="text-sm leading-none">${sc}</span>
-                  <span class="text-[9px] leading-none opacity-75 mt-0.5">${diffLabel}</span>
+                <button onclick="adjustScore(${hIdx}, ${pIdx}, -1)" class="btn-stepper w-9 h-9 rounded-full bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500 font-bold text-xl leading-none flex items-center justify-center">−</button>
+                <div class="w-12 h-10 flex flex-col items-center justify-center tabular-nums ${scoreCls}">
+                  <span class="text-xl font-extrabold leading-none">${sc}</span>
+                  <span class="text-[10px] font-bold leading-none opacity-80 mt-0.5">${diffLabel}</span>
                 </div>
-                <button onclick="adjustScore(${hIdx}, ${pIdx}, 1)" class="btn-stepper w-8 h-8 rounded-full bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500 font-bold text-base flex items-center justify-center">＋</button>
+                <button onclick="adjustScore(${hIdx}, ${pIdx}, 1)" class="btn-stepper w-9 h-9 rounded-full bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500 font-bold text-xl leading-none flex items-center justify-center">＋</button>
               </div>
             </div>
 
@@ -1271,11 +1271,11 @@
 
         return `
           <tr class="border-b border-[var(--border)] last:border-b-0">
-            <td class="px-2 sm:px-2.5 py-1.5 font-semibold truncate max-w-[96px] sm:max-w-none">${escapeHtml(state.players[pIdx])}</td>
-            <td class="px-1.5 sm:px-2.5 py-1.5 text-center tabular-nums">${outSum}</td>
-            <td class="px-1.5 sm:px-2.5 py-1.5 text-center tabular-nums">${inSum}</td>
-            <td class="px-1.5 sm:px-2.5 py-1.5 text-center font-extrabold text-sm tabular-nums">${total}</td>
-            <td class="px-1.5 sm:px-2.5 py-1.5 text-center tabular-nums font-semibold ${diff < 0 ? 'text-emerald-600 dark:text-emerald-400' : diff > 0 ? 'text-amber-600 dark:text-amber-400' : ''}">${formatDiff(diff)}</td>
+            <td class="px-2 sm:px-3 py-2 text-sm font-bold truncate max-w-[115px] sm:max-w-none">${escapeHtml(state.players[pIdx])}</td>
+            <td class="px-1.5 sm:px-2.5 py-2 text-center text-sm tabular-nums">${outSum}</td>
+            <td class="px-1.5 sm:px-2.5 py-2 text-center text-sm tabular-nums">${inSum}</td>
+            <td class="px-1.5 sm:px-2.5 py-2 text-center font-black text-base tabular-nums">${total}</td>
+            <td class="px-1.5 sm:px-2.5 py-2 text-center text-sm tabular-nums font-bold ${diff < 0 ? 'text-emerald-600 dark:text-emerald-400' : diff > 0 ? 'text-amber-600 dark:text-amber-400' : ''}">${formatDiff(diff)}</td>
           </tr>
         `;
       }).join('');
@@ -1357,16 +1357,16 @@
                   rank === 0 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/40' : 'surface-subtle text-[var(--muted-foreground)]'
                 }">${rank + 1}</div>
                 <div class="min-w-0">
-                  <div class="font-bold text-sm truncate">${escapeHtml(s.name)}</div>
-                  <div class="text-[11px] text-[var(--muted-foreground)] tabular-nums">
+                  <div class="font-extrabold text-base truncate">${escapeHtml(s.name)}</div>
+                  <div class="text-xs text-[var(--muted-foreground)] tabular-nums">
                     計 <strong class="text-[var(--foreground)]">${s.totalPoints > 0 ? '+' : ''}${s.totalPoints}pt</strong>
                     <span class="opacity-75 ml-1">(${formulaMyStr}×${nPlayers}−${formulaSumStr})</span>
                   </div>
                 </div>
               </div>
               <div class="text-right tabular-nums shrink-0 leading-tight">
-                <div class="text-base font-black ${settleColor}">${settleSign}${s.settlementPoints}pt</div>
-                ${rules.pointRate > 0 ? `<div class="text-[11px] font-bold ${settleColor}">${settleSign}¥${s.settlementYen.toLocaleString()}</div>` : ''}
+                <div class="text-lg font-black ${settleColor}">${settleSign}${s.settlementPoints}pt</div>
+                ${rules.pointRate > 0 ? `<div class="text-xs font-bold ${settleColor}">${settleSign}¥${s.settlementYen.toLocaleString()}</div>` : ''}
               </div>
             </div>
 
