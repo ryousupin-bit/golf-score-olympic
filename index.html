@@ -253,6 +253,9 @@
   <!-- New Round Modal -->
   <div id="newRoundModal" onclick="closeNewRoundModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs"></div>
 
+  <!-- Hidden Avatar Image Picker -->
+  <input id="avatarFileInput" type="file" accept="image/*" class="hidden" />
+
   <script>
     // =========================================================================
     // 太平洋クラブ 全19コース レギュラーティ公式コースデータ (taiheiyoclub.co.jp 準拠)
@@ -609,6 +612,19 @@
       }));
     }
 
+    const DEFAULT_AVATARS = {
+      // 今後リポジトリに画像ファイルを追加した場合はここにパスを設定できます
+      // 例: 'Ryosuke': './avatars/ryosuke.png'
+    };
+
+    const AVATAR_PALETTES = [
+      'bg-emerald-600 text-white',
+      'bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/35',
+      'bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/35',
+      'bg-violet-500/15 text-violet-700 dark:text-violet-300 border border-violet-500/35',
+      'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/35'
+    ];
+
     function defaultState() {
       return {
         courseId: 'gotenba',
@@ -623,6 +639,7 @@
         rosterVersion: 2,
         registeredPlayers: [...DEFAULT_ROSTER],
         players: [SELF_NAME, DEFAULT_ROSTER[0], DEFAULT_ROSTER[1], DEFAULT_ROSTER[2]],
+        playerAvatars: {},
         roundHistory: [],
         rules: {
           diamondEnabled: true,       // ダイヤモンド 5点
@@ -661,6 +678,7 @@
             }))
           : def.holes;
         const roundHistory = Array.isArray(parsed.roundHistory) ? parsed.roundHistory : [];
+        const playerAvatars = (parsed.playerAvatars && typeof parsed.playerAvatars === 'object') ? parsed.playerAvatars : {};
         const theme = ['system', 'light', 'dark'].includes(parsed.theme) ? parsed.theme : 'system';
         const hasEdits = holes.some(h =>
           h.scores.some(v => v !== null) ||
@@ -678,6 +696,7 @@
           roundDate: parsed.roundDate || getTodayStr(),
           players: rawPlayers,
           registeredPlayers: reg,
+          playerAvatars,
           roundHistory,
           rules: { ...def.rules, ...(parsed.rules || {}) },
           holes
@@ -692,6 +711,89 @@
     function saveState() {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
     }
+
+    function getPlayerAvatar(name) {
+      return (state.playerAvatars && state.playerAvatars[name]) || DEFAULT_AVATARS[name] || null;
+    }
+
+    function getPlayerInitial(name) {
+      const s = String(name || '?').trim();
+      return s ? s[0].toUpperCase() : '?';
+    }
+
+    function renderPlayerAvatar(name, pIdx, size = 'md', interactive = true) {
+      const src = getPlayerAvatar(name);
+      const sizeCls = size === 'sm' ? 'w-7 h-7 text-xs' : 'w-10 h-10 text-sm';
+      const paletteCls = AVATAR_PALETTES[pIdx % AVATAR_PALETTES.length];
+      const ringCls = pIdx === 0 ? 'ring-2 ring-emerald-500/45' : 'ring-1 ring-[var(--border)]';
+      const safeAttrName = escapeHtml(name).replace(/'/g, '&#39;');
+      const inner = src
+        ? `<img src="${escapeHtml(src)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover rounded-full" />`
+        : `<span class="font-extrabold leading-none">${escapeHtml(getPlayerInitial(name))}</span>`;
+      const camBadge = interactive && !src && size !== 'sm'
+        ? `<span class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[var(--card)] border border-[var(--border)] text-[9px] flex items-center justify-center shadow-xs">📷</span>`
+        : '';
+      if (!interactive) {
+        return `<div class="relative ${sizeCls} rounded-full ${src ? ringCls : paletteCls} flex items-center justify-center shrink-0 overflow-hidden">${inner}</div>`;
+      }
+      return `
+        <button type="button" onclick="triggerAvatarUpload('${safeAttrName}')" title="${escapeHtml(name)}のアイコン画像を変更" aria-label="${escapeHtml(name)}のアイコン画像を変更"
+          class="pill-chip relative ${sizeCls} rounded-full ${src ? ringCls : paletteCls} flex items-center justify-center shrink-0 cursor-pointer">
+          <span class="w-full h-full rounded-full overflow-hidden flex items-center justify-center">${inner}</span>
+          ${camBadge}
+        </button>
+      `;
+    }
+
+    let pendingAvatarPlayerName = null;
+
+    window.triggerAvatarUpload = (playerName) => {
+      pendingAvatarPlayerName = playerName;
+      const input = document.getElementById('avatarFileInput');
+      if (!input) return;
+      input.value = '';
+      input.click();
+    };
+
+    window.clearPlayerAvatar = (playerName) => {
+      if (state.playerAvatars && state.playerAvatars[playerName]) {
+        delete state.playerAvatars[playerName];
+        saveState();
+        render();
+      }
+    };
+
+    (function initAvatarPicker() {
+      const input = document.getElementById('avatarFileInput');
+      if (!input) return;
+      input.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file || !pendingAvatarPlayerName) return;
+        const targetName = pendingAvatarPlayerName;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const size = 160;
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const minSide = Math.min(img.width, img.height);
+            const sx = (img.width - minSide) / 2;
+            const sy = (img.height - minSide) / 2;
+            ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            if (!state.playerAvatars) state.playerAvatars = {};
+            state.playerAvatars[targetName] = dataUrl;
+            saveState();
+            render();
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    })();
 
     const darkMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -1182,8 +1284,8 @@
           <div class="surface-subtle rounded-xl p-2 sm:p-2.5 space-y-1.5 sm:space-y-2 min-w-0">
             <!-- 上段: 名前 + スコア を1行に -->
             <div class="flex items-center justify-between gap-2 min-w-0">
-              <div class="flex items-center gap-2 min-w-0 flex-1">
-                <div class="w-7 h-7 rounded-full ${pIdx === 0 ? 'bg-emerald-600 text-white' : 'bg-[var(--card)] border border-[var(--border)] text-[var(--muted-foreground)]'} flex items-center justify-center text-xs font-extrabold shrink-0">${pIdx + 1}</div>
+              <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                ${renderPlayerAvatar(state.players[pIdx], pIdx, 'md', true)}
                 <div class="min-w-0 flex-1 leading-tight">
                   ${playerNameHtml}
                   <div class="text-xs text-[var(--muted-foreground)] tabular-nums mt-0.5">
