@@ -622,7 +622,6 @@
     function createEmptyHolesData() {
       return Array.from({ length: 18 }, () => ({
         scores: [null, null, null, null],
-        putts: [null, null, null, null],
         medals: { diamond: null, gold: null, silver: null, bronze: null, iron: null }, // playerIndex or null
         name: [false, false, false, false], // 舐め (-1) per player
         nearPin: null // null = 未確定, 'carry' = 該当なし(キャリーオーバー), 0..3 = playerIndex
@@ -991,7 +990,6 @@
       const renderHoleBtn = (hm, idx) => {
         const d = state.holes[idx];
         const hasActivity = d.scores.slice(0, nPlayers).some(v => v !== null)
-          || d.putts.slice(0, nPlayers).some(v => v !== null)
           || Object.values(d.medals).some(v => v !== null)
           || d.name.slice(0, nPlayers).some(Boolean)
           || d.nearPin !== null;
@@ -1028,7 +1026,6 @@
       // プレイヤー別コンパクトカード (2x2 グリッド対応)
       const playerRows = Array.from({ length: nPlayers }, (_, pIdx) => {
         const sc = hData.scores[pIdx] !== null ? hData.scores[pIdx] : holeMeta.p;
-        const pt = hData.putts[pIdx] !== null ? hData.putts[pIdx] : 2;
         const scoreCls = getScoreClass(sc, holeMeta.p);
         const diffLabel = formatDiff(sc - holeMeta.p);
         const pTotalPts = stats[pIdx].totalPoints;
@@ -1089,15 +1086,15 @@
         const playerNameHtml = pIdx === 0
           ? `<span class="font-extrabold text-xs sm:text-sm tracking-tight block truncate">${escapeHtml(SELF_NAME)}</span>`
           : `<select aria-label="プレイヤー${pIdx + 1}選択" onchange="selectPlayerFromRoster(${pIdx}, this.value)"
-               class="bg-transparent font-bold text-xs sm:text-sm pr-0.5 py-0 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500/40 w-full max-w-[115px] truncate cursor-pointer">
+               class="bg-transparent font-bold text-xs sm:text-sm pr-0.5 py-0 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500/40 w-full max-w-[140px] truncate cursor-pointer">
                ${rosterOptions.map(name => `<option value="${escapeHtml(name)}" ${name === state.players[pIdx] ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
              </select>`;
 
         return `
           <div class="surface-subtle rounded-xl p-2 sm:p-2.5 space-y-1.5 sm:space-y-2 min-w-0">
-            <!-- 上段: 名前 + スコア + パット を1行に -->
-            <div class="flex items-center justify-between gap-1.5 sm:gap-2 min-w-0">
-              <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+            <!-- 上段: 名前 + スコア を1行に -->
+            <div class="flex items-center justify-between gap-2 min-w-0">
+              <div class="flex items-center gap-2 min-w-0 flex-1">
                 <div class="w-6 h-6 rounded-full ${pIdx === 0 ? 'bg-emerald-600 text-white' : 'bg-[var(--card)] border border-[var(--border)] text-[var(--muted-foreground)]'} flex items-center justify-center text-[11px] font-extrabold shrink-0">${pIdx + 1}</div>
                 <div class="min-w-0 flex-1 leading-tight">
                   ${playerNameHtml}
@@ -1107,24 +1104,14 @@
                 </div>
               </div>
 
-              <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-                <!-- 打数 -->
-                <div class="flex items-center gap-0.5 sm:gap-1">
-                  <button onclick="adjustScore(${hIdx}, ${pIdx}, -1)" class="btn-stepper w-7 h-7 rounded-full bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500 font-bold text-sm flex items-center justify-center">−</button>
-                  <div class="w-8 sm:w-9 h-7 sm:h-8 flex flex-col items-center justify-center tabular-nums ${scoreCls}">
-                    <span class="text-sm leading-none">${sc}</span>
-                    <span class="text-[9px] leading-none opacity-75 mt-0.5">${diffLabel}</span>
-                  </div>
-                  <button onclick="adjustScore(${hIdx}, ${pIdx}, 1)" class="btn-stepper w-7 h-7 rounded-full bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500 font-bold text-sm flex items-center justify-center">＋</button>
+              <!-- 打数 -->
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="adjustScore(${hIdx}, ${pIdx}, -1)" class="btn-stepper w-8 h-8 rounded-full bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500 font-bold text-base flex items-center justify-center">−</button>
+                <div class="w-10 h-8 flex flex-col items-center justify-center tabular-nums ${scoreCls}">
+                  <span class="text-sm leading-none">${sc}</span>
+                  <span class="text-[9px] leading-none opacity-75 mt-0.5">${diffLabel}</span>
                 </div>
-
-                <!-- パット -->
-                <div class="flex items-center gap-0.5 pl-1.5 border-l border-[var(--border)]">
-                  <span class="text-[9px] font-bold text-[var(--muted-foreground)] mr-0.5">P</span>
-                  <button onclick="adjustPutt(${hIdx}, ${pIdx}, -1)" class="btn-stepper w-6 h-6 rounded-full bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500 font-bold text-xs flex items-center justify-center">−</button>
-                  <span class="w-4 sm:w-5 text-center text-xs font-bold tabular-nums">${pt !== null ? pt : '-'}</span>
-                  <button onclick="adjustPutt(${hIdx}, ${pIdx}, 1)" class="btn-stepper w-6 h-6 rounded-full bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500 font-bold text-xs flex items-center justify-center">＋</button>
-                </div>
+                <button onclick="adjustScore(${hIdx}, ${pIdx}, 1)" class="btn-stepper w-8 h-8 rounded-full bg-[var(--card)] border border-[var(--border)] hover:border-emerald-500 font-bold text-base flex items-center justify-center">＋</button>
               </div>
             </div>
 
@@ -1281,7 +1268,6 @@
         const inSum = state.holes.slice(9, 18).reduce((acc, h, i) => acc + (h.scores[pIdx] !== null ? h.scores[pIdx] : variant.holes[9 + i].p), 0);
         const total = outSum + inSum;
         const diff = total - totalParAll;
-        const puttSum = state.holes.reduce((acc, h) => acc + (h.putts[pIdx] !== null ? h.putts[pIdx] : 2), 0);
 
         return `
           <tr class="border-b border-[var(--border)] last:border-b-0">
@@ -1290,7 +1276,6 @@
             <td class="px-1.5 sm:px-2.5 py-1.5 text-center tabular-nums">${inSum}</td>
             <td class="px-1.5 sm:px-2.5 py-1.5 text-center font-extrabold text-sm tabular-nums">${total}</td>
             <td class="px-1.5 sm:px-2.5 py-1.5 text-center tabular-nums font-semibold ${diff < 0 ? 'text-emerald-600 dark:text-emerald-400' : diff > 0 ? 'text-amber-600 dark:text-amber-400' : ''}">${formatDiff(diff)}</td>
-            <td class="px-1.5 sm:px-2.5 py-1.5 text-center tabular-nums text-[var(--muted-foreground)]">${puttSum ?? '-'}</td>
           </tr>
         `;
       }).join('');
@@ -1314,7 +1299,6 @@
                     <th class="px-1.5 sm:px-3 py-2 text-center font-semibold">${variant.inLabel || 'IN'}</th>
                     <th class="px-1.5 sm:px-3 py-2 text-center font-semibold">TOTAL</th>
                     <th class="px-1.5 sm:px-3 py-2 text-center font-semibold">対PAR</th>
-                    <th class="px-1.5 sm:px-3 py-2 text-center font-semibold">パット</th>
                   </tr>
                 </thead>
                 <tbody>${summaryRows}</tbody>
@@ -1454,7 +1438,7 @@
     }
 
     // =========================================================================
-    // TAB 4: 履歴画面 (Ryosuke自身のスコアとパット数のみ一覧表示)
+    // TAB 4: 履歴画面 (Ryosuke自身のスコア一覧表示)
     // =========================================================================
     function renderHistoryTab() {
       const history = [...state.roundHistory].sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.savedAt || 0) - (a.savedAt || 0));
@@ -1462,8 +1446,6 @@
       const count = history.length;
       const avgScore = count ? (history.reduce((a, r) => a + r.totalScore, 0) / count).toFixed(1) : '-';
       const bestScore = count ? Math.min(...history.map(r => r.totalScore)) : '-';
-      const puttsValid = history.filter(r => r.totalPutts !== null);
-      const avgPutts = puttsValid.length ? (puttsValid.reduce((a, r) => a + r.totalPutts, 0) / puttsValid.length).toFixed(1) : '-';
 
       const rows = history.map(r => {
         const diff = r.totalScore - r.par;
@@ -1484,7 +1466,6 @@
               <span class="font-extrabold text-sm">${r.totalScore}</span>
               <span class="text-[10px] ml-0.5 font-semibold ${diff < 0 ? 'text-emerald-600 dark:text-emerald-400' : diff > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-[var(--muted-foreground)]'}">(${formatDiff(diff)})</span>
             </td>
-            <td class="px-2 py-2 text-center tabular-nums font-bold">${r.totalPutts !== null ? r.totalPutts : '-'}</td>
             <td class="px-3 py-2 text-right whitespace-nowrap">
               ${pendingDeleteHistoryId === r.id ? `
                 <button onclick="confirmDeleteHistoryRound('${r.id}')" class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-red-600 hover:bg-red-500 text-white mr-1">本当に削除</button>
@@ -1500,8 +1481,8 @@
 
       return `
         <div class="space-y-2.5">
-          <!-- Ryosuke 統計サマリー (4列1行) -->
-          <div class="grid grid-cols-4 gap-1.5 sm:gap-2 tabular-nums">
+          <!-- Ryosuke 統計サマリー (3列1行) -->
+          <div class="grid grid-cols-3 gap-1.5 sm:gap-2 tabular-nums">
             <div class="surface-card rounded-xl p-2 sm:p-2.5 text-center min-w-0">
               <div class="text-[10px] text-[var(--muted-foreground)] truncate">ラウンド</div>
               <div class="text-base sm:text-lg font-black">${count}<span class="text-[10px] font-normal ml-0.5">R</span></div>
@@ -1514,16 +1495,12 @@
               <div class="text-[10px] text-[var(--muted-foreground)] truncate">ベスト</div>
               <div class="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400">${bestScore}</div>
             </div>
-            <div class="surface-card rounded-xl p-2 sm:p-2.5 text-center min-w-0">
-              <div class="text-[10px] text-[var(--muted-foreground)] truncate">平均パット</div>
-              <div class="text-base sm:text-lg font-black">${avgPutts}</div>
-            </div>
           </div>
 
           <!-- 過去スコア一覧 -->
           <div class="surface-card rounded-2xl overflow-hidden">
             <div class="px-3.5 py-2 border-b border-[var(--border)] flex flex-wrap items-center justify-between gap-2">
-              <h2 class="text-xs font-bold">📈 ${escapeHtml(SELF_NAME)} の過去スコア一覧（スコア &amp; パット数）</h2>
+              <h2 class="text-xs font-bold">📈 ${escapeHtml(SELF_NAME)} の過去スコア一覧</h2>
               <div class="flex flex-wrap items-center gap-1.5">
                 <button onclick="saveCurrentRoundToHistory()" class="pill-chip px-2.5 py-1 rounded-lg text-[11px] font-bold surface-subtle hover:border-emerald-500">
                   今のラウンドを保存
@@ -1543,7 +1520,6 @@
                       <th class="px-2 py-1.5 text-center font-semibold">OUT</th>
                       <th class="px-2 py-1.5 text-center font-semibold">IN</th>
                       <th class="px-2 py-1.5 text-center font-semibold">スコア</th>
-                      <th class="px-2 py-1.5 text-center font-semibold">パット</th>
                       <th class="text-right px-3 py-1.5 font-semibold">操作</th>
                     </tr>
                   </thead>
@@ -1552,7 +1528,7 @@
               </div>
             ` : `
               <div class="p-6 text-center text-xs text-[var(--muted-foreground)]">
-                まだ履歴がありません。右上の「保存」ボタンで ${escapeHtml(SELF_NAME)} のスコアとパット数を記録できます。
+                まだ履歴がありません。右上の「保存」ボタンで ${escapeHtml(SELF_NAME)} のスコアを記録できます。
               </div>
             `}
           </div>
@@ -1690,7 +1666,6 @@
     function hasCurrentRoundEdits() {
       return state.holes.some(h =>
         h.scores.some(v => v !== null) ||
-        h.putts.some(v => v !== null) ||
         Object.values(h.medals).some(v => v !== null) ||
         h.name.some(Boolean) ||
         h.nearPin !== null
@@ -1889,7 +1864,6 @@
       const totalPar = variant.holes.reduce((a, b) => a + b.p, 0);
       const outScore = state.holes.slice(0, 9).reduce((acc, h, i) => acc + (h.scores[0] !== null ? h.scores[0] : variant.holes[i].p), 0);
       const inScore = state.holes.slice(9, 18).reduce((acc, h, i) => acc + (h.scores[0] !== null ? h.scores[0] : variant.holes[9 + i].p), 0);
-      const totalPutts = state.holes.reduce((acc, h) => acc + (h.putts[0] !== null ? h.putts[0] : 2), 0);
 
       const id = state.currentRoundId || `r_${Date.now()}`;
       state.currentRoundId = id;
@@ -1905,7 +1879,6 @@
         outScore,
         inScore,
         totalScore: outScore + inScore,
-        totalPutts,
         savedAt: Date.now(),
         snapshot: {
           playerCount: state.playerCount,
@@ -1986,16 +1959,6 @@
       if (next < 1) next = 1;
       if (next > 20) next = 20;
       state.holes[hIdx].scores[pIdx] = next;
-      saveState();
-      render();
-    };
-
-    window.adjustPutt = (hIdx, pIdx, delta) => {
-      const cur = state.holes[hIdx].putts[pIdx] !== null ? state.holes[hIdx].putts[pIdx] : 2;
-      let next = cur + delta;
-      if (next < 0) next = 0;
-      if (next > 10) next = 10;
-      state.holes[hIdx].putts[pIdx] = next;
       saveState();
       render();
     };
@@ -2121,7 +2084,6 @@
         const par = variant.holes[i].p;
         for (let p = 0; p < 4; p++) {
           state.holes[i].scores[p] = Math.max(1, par + demoOffsets[i][p]);
-          state.holes[i].putts[p] = (p === (i % 4)) ? 1 : 2;
         }
       }
       // 鉄4枚（Ryosuke）→ 鉄カン(+4ptボーナス)
