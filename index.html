@@ -230,7 +230,6 @@
     <!-- Compact Bottom Action Bar (shown during active round) -->
     <footer id="playFooter" class="hidden surface-card rounded-xl px-2.5 py-1.5 flex items-center justify-between gap-2">
       <button onclick="switchTab('settings')" class="flex items-center gap-1.5 min-w-0 text-left">
-        <img src="./icon-192.png" alt="TAIHEIYO GOLF" class="w-5 h-5 rounded-md object-cover shrink-0" />
         <span id="footerMeta" class="text-[11px] font-semibold text-[var(--muted-foreground)] tabular-nums truncate"></span>
       </button>
       <div class="flex items-center gap-1.5 shrink-0">
@@ -612,10 +611,14 @@
       }));
     }
 
-    const DEFAULT_AVATARS = {
-      // 今後リポジトリに画像ファイルを追加した場合はここにパスを設定できます
-      // 例: 'Ryosuke': './avatars/ryosuke.png'
-    };
+    const DOG_AVATAR_POOL = [
+      './avatars/dog-original.png',
+      './avatars/dog-shiba.png',
+      './avatars/dog-golden.png',
+      './avatars/dog-frenchie.png',
+      './avatars/dog-poodle.png',
+      './avatars/dog-corgi.png'
+    ];
 
     const AVATAR_PALETTES = [
       'bg-emerald-600 text-white',
@@ -640,6 +643,7 @@
         registeredPlayers: [...DEFAULT_ROSTER],
         players: [SELF_NAME, DEFAULT_ROSTER[0], DEFAULT_ROSTER[1], DEFAULT_ROSTER[2]],
         playerAvatars: {},
+        assignedDogAvatars: {},
         roundHistory: [],
         rules: {
           diamondEnabled: true,       // ダイヤモンド 5点
@@ -679,6 +683,7 @@
           : def.holes;
         const roundHistory = Array.isArray(parsed.roundHistory) ? parsed.roundHistory : [];
         const playerAvatars = (parsed.playerAvatars && typeof parsed.playerAvatars === 'object') ? parsed.playerAvatars : {};
+        const assignedDogAvatars = (parsed.assignedDogAvatars && typeof parsed.assignedDogAvatars === 'object') ? parsed.assignedDogAvatars : {};
         const theme = ['system', 'light', 'dark'].includes(parsed.theme) ? parsed.theme : 'system';
         const hasEdits = holes.some(h =>
           h.scores.some(v => v !== null) ||
@@ -697,6 +702,7 @@
           players: rawPlayers,
           registeredPlayers: reg,
           playerAvatars,
+          assignedDogAvatars,
           roundHistory,
           rules: { ...def.rules, ...(parsed.rules || {}) },
           holes
@@ -713,7 +719,25 @@
     }
 
     function getPlayerAvatar(name) {
-      return (state.playerAvatars && state.playerAvatars[name]) || DEFAULT_AVATARS[name] || null;
+      if (state.playerAvatars && state.playerAvatars[name]) {
+        return state.playerAvatars[name];
+      }
+      if (!state.assignedDogAvatars) state.assignedDogAvatars = {};
+      if (state.assignedDogAvatars[name] && DOG_AVATAR_POOL.includes(state.assignedDogAvatars[name])) {
+        return state.assignedDogAvatars[name];
+      }
+      // 他の参加中プレーヤーと被らないようにランダム割り当て
+      const usedByOthers = new Set(
+        state.players
+          .filter(p => p !== name && state.assignedDogAvatars[p])
+          .map(p => state.assignedDogAvatars[p])
+      );
+      const candidates = DOG_AVATAR_POOL.filter(src => !usedByOthers.has(src));
+      const pool = candidates.length > 0 ? candidates : DOG_AVATAR_POOL;
+      const picked = pool[Math.floor(Math.random() * pool.length)];
+      state.assignedDogAvatars[name] = picked;
+      saveState();
+      return picked;
     }
 
     function getPlayerInitial(name) {
@@ -730,9 +754,6 @@
       const inner = src
         ? `<img src="${escapeHtml(src)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover rounded-full" />`
         : `<span class="font-extrabold leading-none">${escapeHtml(getPlayerInitial(name))}</span>`;
-      const camBadge = interactive && !src && size !== 'sm'
-        ? `<span class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[var(--card)] border border-[var(--border)] text-[9px] flex items-center justify-center shadow-xs">📷</span>`
-        : '';
       if (!interactive) {
         return `<div class="relative ${sizeCls} rounded-full ${src ? ringCls : paletteCls} flex items-center justify-center shrink-0 overflow-hidden">${inner}</div>`;
       }
@@ -740,7 +761,6 @@
         <button type="button" onclick="triggerAvatarUpload('${safeAttrName}')" title="${escapeHtml(name)}のアイコン画像を変更" aria-label="${escapeHtml(name)}のアイコン画像を変更"
           class="pill-chip relative ${sizeCls} rounded-full ${src ? ringCls : paletteCls} flex items-center justify-center shrink-0 cursor-pointer">
           <span class="w-full h-full rounded-full overflow-hidden flex items-center justify-center">${inner}</span>
-          ${camBadge}
         </button>
       `;
     }
