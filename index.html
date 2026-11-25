@@ -17,6 +17,15 @@
     html, body {
       max-width: 100%;
       overflow-x: clip;
+      touch-action: manipulation;
+    }
+    button, a, input, select, label, [onclick] {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button {
+      user-select: none;
+      -webkit-user-select: none;
     }
     body {
       padding-top: env(safe-area-inset-top, 0px);
@@ -2168,6 +2177,11 @@
         render();
       });
     });
+
+    // Prevent accidental double-tap zoom on rapid button taps (iOS Safari)
+    document.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+    }, { passive: false });
 
     // Initial render
     render();
