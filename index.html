@@ -28,27 +28,27 @@
       -webkit-user-select: none;
     }
     body {
-      padding-top: env(safe-area-inset-top, 0px);
-      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4px);
       padding-left: env(safe-area-inset-left, 0px);
       padding-right: env(safe-area-inset-right, 0px);
     }
     :root {
-      --background: #f6f7f6;
+      --background: #f2f4f3;
       --card: #ffffff;
-      --border: #e3e6e4;
-      --foreground: #18201c;
-      --muted-foreground: #6b756f;
+      --border: #d5dcd8;
+      --foreground: #141c18;
+      --muted-foreground: #4c5751;
       --primary: #156445;
       --primary-foreground: #ffffff;
       color-scheme: light;
     }
     html.dark {
       --background: #111413;
-      --card: #1a1e1c;
-      --border: #2c322f;
-      --foreground: #e8ece9;
-      --muted-foreground: #8b958f;
+      --card: #1a1f1d;
+      --border: #2f3733;
+      --foreground: #eff3f0;
+      --muted-foreground: #a5b0aa;
       --primary: #6fd8a4;
       --primary-foreground: #000000;
       color-scheme: dark;
@@ -76,11 +76,7 @@
       font-family: "Inter", "SF Pro Text", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
       letter-spacing: 0.01em;
       -webkit-font-smoothing: antialiased;
-      background:
-        radial-gradient(1100px 520px at -10% -15%, var(--brand-soft), transparent 60%),
-        radial-gradient(900px 480px at 115% -10%, var(--gold-soft), transparent 55%),
-        var(--background);
-      background-attachment: fixed;
+      background-color: var(--background);
       min-height: 100vh;
     }
     html.dark body { --brand-ink: #6fd8a4; --brand-soft: rgba(111, 216, 164, 0.08); --gold-soft: rgba(226, 193, 120, 0.07); }
@@ -88,20 +84,15 @@
 
     h1, h2, h3 { letter-spacing: 0.02em; }
 
-    /* Elevated surfaces with depth & soft texture */
+    /* Crisp elevated surfaces without hazy top washout */
     .surface-card {
-      background: color-mix(in srgb, var(--card) 94%, transparent);
-      -webkit-backdrop-filter: blur(14px);
-      backdrop-filter: blur(14px);
-      border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.05),
-        0 1px 2px rgba(0, 0, 0, 0.04),
-        0 14px 34px -18px rgba(8, 40, 26, 0.22);
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     }
     .surface-subtle {
-      background: color-mix(in srgb, var(--background) 72%, var(--card));
-      border: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+      background: color-mix(in srgb, var(--background) 65%, var(--card));
+      border: 1px solid var(--border);
       transition: border-color 0.18s ease, background-color 0.18s ease;
     }
     .btn-stepper {
@@ -170,9 +161,10 @@
     .btn-gold:hover { filter: brightness(1.06); }
 
     /* Segmented tab control */
-    .tab-btn { color: var(--muted-foreground); transition: background-color 0.2s var(--ease-out), color 0.2s ease, box-shadow 0.2s ease; }
-    .tab-btn:hover { color: var(--foreground); }
+    .tab-btn { color: var(--foreground); opacity: 0.78; transition: background-color 0.2s var(--ease-out), color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease; }
+    .tab-btn:hover { opacity: 1; }
     .tab-btn.tab-active {
+      opacity: 1;
       background: linear-gradient(180deg, var(--brand-500), var(--brand-700));
       color: #ffffff;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 1px 2px rgba(0, 0, 0, 0.16), 0 6px 14px -6px rgba(15, 77, 53, 0.5);
