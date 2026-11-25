@@ -1384,9 +1384,15 @@
                 <span class="text-[11px] sm:text-xs text-[var(--muted-foreground)] whitespace-nowrap"><strong class="text-[var(--foreground)]">${holeMeta.y}</strong>Y · HDCP ${holeMeta.h}</span>
               </div>
 
-              <button onclick="selectHole(${Math.min(17, hIdx + 1)})" ${hIdx === 17 ? 'disabled' : ''} class="pill-chip px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold surface-subtle disabled:opacity-35 shrink-0 whitespace-nowrap">
-                次 →
-              </button>
+              ${hIdx === 17 ? `
+                <button onclick="finishRound()" class="btn-gold pill-chip px-3 py-1 rounded-lg text-xs font-extrabold shrink-0 whitespace-nowrap">
+                  終了 🏁
+                </button>
+              ` : `
+                <button onclick="selectHole(${Math.min(17, hIdx + 1)})" class="pill-chip px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold surface-subtle shrink-0 whitespace-nowrap">
+                  次 →
+                </button>
+              `}
             </div>
             ${par3InlineBtn ? `<div class="flex justify-center">${par3InlineBtn}</div>` : ''}
           </div>
@@ -1395,6 +1401,13 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5 sm:gap-2.5">
             ${playerRows}
           </div>
+
+          ${hIdx === 17 ? `
+            <button onclick="finishRound()"
+              class="w-full btn-gold pill-chip py-2.5 rounded-xl text-sm font-extrabold shadow-sm">
+              🏁 ラウンド終了・結果を見る
+            </button>
+          ` : ''}
         </div>
       `;
     }
@@ -2131,11 +2144,187 @@
       render();
     };
 
+    let showRoundResult = false;
+
+    function renderRoundResultScreen() {
+      const course = getCourse();
+      const variant = getVariant();
+      const nPlayers = state.playerCount;
+      const totalParAll = variant.holes.reduce((a, b) => a + b.p, 0);
+      const { stats } = calculateOlympic();
+      const rules = state.rules;
+
+      // スコア順位（少ない順）
+      const scoreRanking = Array.from({ length: nPlayers }, (_, pIdx) => {
+        const outSum = state.holes.slice(0, 9).reduce((acc, h, i) => acc + (h.scores[pIdx] !== null ? h.scores[pIdx] : variant.holes[i].p), 0);
+        const inSum = state.holes.slice(9, 18).reduce((acc, h, i) => acc + (h.scores[pIdx] !== null ? h.scores[pIdx] : variant.holes[9 + i].p), 0);
+        const total = outSum + inSum;
+        return { pIdx, name: state.players[pIdx], outSum, inSum, total, diff: total - totalParAll };
+      }).sort((a, b) => a.total - b.total);
+
+      // オリンピック順位（精算ポイント多い順）
+      const olympicRanking = [...stats].sort((a, b) => b.settlementPoints - a.settlementPoints);
+      const olympicWinnerName = olympicRanking[0] ? olympicRanking[0].name : null;
+
+      // 全員の犬アイコンを並べたお祝いヘッダー
+      const dogParadeHtml = Array.from({ length: nPlayers }, (_, pIdx) => {
+        const name = state.players[pIdx];
+        const src = getPlayerAvatar(name);
+        const isChamp = name === olympicWinnerName && olympicRanking[0].settlementPoints > 0;
+        return `
+          <div class="flex flex-col items-center gap-1 min-w-0">
+            <div class="relative">
+              ${isChamp ? '<span class="absolute -top-3 left-1/2 -translate-x-1/2 text-sm leading-none drop-shadow">👑</span>' : ''}
+              <img src="${escapeHtml(src)}" alt="${escapeHtml(name)}"
+                class="w-13 h-13 sm:w-14 sm:h-14 rounded-full object-cover ring-2 ${isChamp ? 'ring-amber-300 shadow-lg' : 'ring-white/35'} bg-white/10" style="width:54px;height:54px;" />
+            </div>
+            <span class="text-[10px] font-bold text-white/90 truncate max-w-[72px]">${escapeHtml(name)}</span>
+          </div>
+        `;
+      }).join('');
+
+      const scoreRowsHtml = scoreRanking.map((r, idx) => {
+        const medalMark = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`;
+        const diffColor = r.diff < 0 ? 'text-emerald-600 dark:text-emerald-400' : r.diff > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-[var(--muted-foreground)]';
+        return `
+          <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl surface-subtle">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-5 text-center text-xs font-extrabold shrink-0">${medalMark}</span>
+              ${renderPlayerAvatar(r.name, r.pIdx, 'sm', false)}
+              <div class="min-w-0">
+                <div class="font-extrabold text-sm truncate">${escapeHtml(r.name)}</div>
+                <div class="text-[11px] text-[var(--muted-foreground)] tabular-nums">${variant.outLabel || 'OUT'} ${r.outSum} · ${variant.inLabel || 'IN'} ${r.inSum}</div>
+              </div>
+            </div>
+            <div class="text-right tabular-nums shrink-0 leading-tight">
+              <div class="text-lg font-black">${r.total}</div>
+              <div class="text-[11px] font-bold ${diffColor}">${formatDiff(r.diff)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const olympicRowsHtml = olympicRanking.map((s, idx) => {
+        const pIdx = state.players.indexOf(s.name);
+        const settleSign = s.settlementPoints > 0 ? '+' : '';
+        const settleColor = s.settlementPoints > 0
+          ? 'text-emerald-600 dark:text-emerald-400'
+          : s.settlementPoints < 0 ? 'text-red-600 dark:text-red-400' : 'text-[var(--muted-foreground)]';
+        const rankMark = idx === 0 && s.settlementPoints > 0 ? '👑' : `${idx + 1}`;
+        return `
+          <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl surface-subtle">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-5 text-center text-xs font-extrabold shrink-0">${rankMark}</span>
+              ${renderPlayerAvatar(s.name, pIdx >= 0 ? pIdx : idx, 'sm', false)}
+              <div class="min-w-0">
+                <div class="font-extrabold text-sm truncate">${escapeHtml(s.name)}</div>
+                <div class="text-[11px] text-[var(--muted-foreground)] tabular-nums">獲得 ${s.totalPoints > 0 ? '+' : ''}${s.totalPoints}pt</div>
+              </div>
+            </div>
+            <div class="text-right tabular-nums shrink-0 leading-tight">
+              <div class="text-base font-black ${settleColor}">${settleSign}${s.settlementPoints}pt</div>
+              ${rules.pointRate > 0 ? `<div class="text-xs font-bold ${settleColor}">${settleSign}¥${s.settlementYen.toLocaleString()}</div>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="max-w-lg mx-auto space-y-2.5 pb-4">
+          <!-- お疲れ様でした！お祝いカード（犬アイコン勢揃い） -->
+          <div class="hero rounded-2xl px-4 py-4 text-center space-y-3">
+            <div class="space-y-0.5">
+              <div class="inline-block badge-gold px-2.5 py-0.5 rounded-full text-[10px] font-bold">ROUND COMPLETE</div>
+              <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white">⛳ お疲れ様でした！</h1>
+              <div class="text-xs text-white/80 tabular-nums">
+                ${escapeHtml(course.name)}${course.variants.length > 1 ? ` (${escapeHtml(variant.label)})` : ''} · ${escapeHtml(state.roundDate || getTodayStr())} · PAR ${totalParAll}
+              </div>
+            </div>
+            <div class="flex items-end justify-center gap-3 sm:gap-4 pt-2">
+              ${dogParadeHtml}
+            </div>
+          </div>
+
+          <!-- 全員のスコア -->
+          <div class="surface-card rounded-2xl p-3 space-y-2">
+            <div class="flex items-center justify-between px-0.5">
+              <h2 class="text-xs font-extrabold">🏌️ 全員のスコア結果</h2>
+              <span class="text-[11px] text-[var(--muted-foreground)] tabular-nums">PAR ${totalParAll}</span>
+            </div>
+            <div class="space-y-1.5">
+              ${scoreRowsHtml}
+            </div>
+          </div>
+
+          <!-- オリンピック結果 -->
+          <div class="surface-card rounded-2xl p-3 space-y-2">
+            <div class="flex items-center justify-between px-0.5">
+              <h2 class="text-xs font-extrabold">🏅 オリンピック精算結果</h2>
+              <span class="text-[11px] text-[var(--muted-foreground)]">履歴に自動保存済み</span>
+            </div>
+            <div class="space-y-1.5">
+              ${olympicRowsHtml}
+            </div>
+          </div>
+
+          <!-- 次のアクション -->
+          <div class="space-y-2 pt-1">
+            <button onclick="completeAndReturnToSetup()"
+              class="w-full pill-chip py-3 rounded-xl text-sm font-extrabold bg-emerald-600 text-white shadow-sm">
+              ⛳ コース・日程選択画面へ
+            </button>
+            <button onclick="backFromSummary()"
+              class="w-full py-2 rounded-xl text-xs font-bold surface-card text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+              ← ホール18に戻って修正する
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    window.finishRound = () => {
+      saveCurrentRoundToHistory(true);
+      showRoundResult = true;
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.backFromSummary = () => {
+      showRoundResult = false;
+      render();
+    };
+
+    window.completeAndReturnToSetup = () => {
+      showRoundResult = false;
+      state.holes = createEmptyHolesData();
+      state.currentHole = 0;
+      state.currentRoundId = null;
+      state.roundDate = getTodayStr();
+      state.roundStarted = false;
+      state.activeTab = 'hole';
+      saveState();
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     function render() {
       state.players[0] = SELF_NAME;
       const topNav = document.getElementById('topNav');
       const playFooter = document.getElementById('playFooter');
       const main = document.getElementById('mainContent');
+
+      if (showRoundResult) {
+        if (topNav) topNav.classList.add('hidden');
+        if (playFooter) playFooter.classList.add('hidden');
+        if (main.dataset.tab !== 'result') {
+          main.dataset.tab = 'result';
+          main.classList.remove('view-enter');
+          void main.offsetWidth;
+          main.classList.add('view-enter');
+        }
+        main.innerHTML = renderRoundResultScreen();
+        return;
+      }
 
       if (!state.roundStarted) {
         if (topNav) topNav.classList.add('hidden');
