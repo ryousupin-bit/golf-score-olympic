@@ -170,13 +170,12 @@
     .btn-gold:hover { filter: brightness(1.06); }
 
     /* Segmented tab control */
-    .seg { background: rgba(0, 0, 0, 0.24); border: 1px solid rgba(255, 255, 255, 0.07); }
-    .tab-btn { color: rgba(226, 240, 232, 0.66); transition: background-color 0.2s var(--ease-out), color 0.2s ease, box-shadow 0.2s ease; }
-    .tab-btn:hover { color: #fff; }
+    .tab-btn { color: var(--muted-foreground); transition: background-color 0.2s var(--ease-out), color 0.2s ease, box-shadow 0.2s ease; }
+    .tab-btn:hover { color: var(--foreground); }
     .tab-btn.tab-active {
-      background: #fbfdfc;
-      color: var(--brand-700);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 8px 18px -10px rgba(0, 0, 0, 0.5);
+      background: linear-gradient(180deg, var(--brand-500), var(--brand-700));
+      color: #ffffff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 1px 2px rgba(0, 0, 0, 0.16), 0 6px 14px -6px rgba(15, 77, 53, 0.5);
     }
 
     /* View transition on tab change */
@@ -216,57 +215,39 @@
 </head>
 <body class="bg-[var(--background)] text-[var(--foreground)] antialiased m-0">
   <div id="app" class="max-w-5xl w-full min-w-0 mx-auto px-2 sm:px-4 py-1.5 sm:py-2.5 space-y-1.5 sm:space-y-2.5">
-    <!-- Compact Modern Header -->
-    <header class="hero rounded-2xl px-3 sm:px-3.5 py-2 sm:py-3 space-y-1.5 sm:space-y-2">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center justify-between gap-2 w-full sm:w-auto min-w-0">
-          <div class="flex items-center gap-2 min-w-0">
-            <img id="appIconImg" src="data:image/jpeg;base64,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" alt="App Icon"
-              class="w-10 h-10 rounded-xl object-cover shadow-lg ring-2 ring-white/20 shrink-0" />
-            <div class="min-w-0">
-              <div class="flex items-center gap-1.5">
-                <h1 class="hero-title leading-none truncate">TAIHEIYO GOLF</h1>
-                <span class="badge-gold px-2 py-0.5 rounded-full text-[9px] font-bold shrink-0">Ryosuke</span>
-              </div>
-              <div id="courseMeta" class="text-[11px] text-[var(--muted-foreground)] tabular-nums truncate mt-0.5"></div>
-            </div>
-          </div>
-          <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="テーマ切替" title="ライト／ダーク切替"
-            class="pill-chip w-8 h-8 rounded-lg surface-subtle flex items-center justify-center text-sm shrink-0">
-            🌙
-          </button>
-        </div>
+    <!-- Slim Navigation Bar (shown during active round) -->
+    <nav id="topNav" class="hidden surface-card flex items-center gap-0.5 sm:gap-1 p-1 rounded-xl w-full" role="tablist">
+      <button data-tab="hole" class="tab-btn flex-1 min-w-0 px-1 sm:px-2.5 py-1.5 rounded-lg text-[10.5px] sm:text-xs font-bold transition-all whitespace-nowrap text-center">ホール入力</button>
+      <button data-tab="card" class="tab-btn flex-1 min-w-0 px-1 sm:px-2.5 py-1.5 rounded-lg text-[10.5px] sm:text-xs font-bold transition-all whitespace-nowrap text-center">スコアカード</button>
+      <button data-tab="olympic" class="tab-btn flex-1 min-w-0 px-1 sm:px-2.5 py-1.5 rounded-lg text-[10.5px] sm:text-xs font-bold transition-all whitespace-nowrap text-center">オリンピック</button>
+      <button data-tab="history" class="tab-btn px-2 sm:px-3 shrink-0 py-1.5 rounded-lg text-[10.5px] sm:text-xs font-bold transition-all whitespace-nowrap text-center">履歴</button>
+      <button data-tab="settings" class="tab-btn px-2 sm:px-3 shrink-0 py-1.5 rounded-lg text-[10.5px] sm:text-xs font-bold transition-all whitespace-nowrap text-center">設定</button>
+    </nav>
 
-        <div class="flex flex-wrap items-center gap-1.5 w-full sm:w-auto min-w-0">
-          <input id="roundDateInput" type="date" aria-label="プレー日"
-            class="surface-subtle rounded-lg px-2 py-1 text-[11px] font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/40 max-w-full" />
-          <select id="courseSelect" aria-label="コース選択"
-            class="surface-subtle rounded-lg px-2 py-1 text-[11px] font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40 min-w-0 flex-1 sm:flex-none max-w-full sm:max-w-[165px]"></select>
-          <select id="subCourseSelect" aria-label="サブコース選択"
-            class="hidden surface-subtle rounded-lg px-2 py-1 text-[11px] font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40 min-w-0 max-w-full"></select>
-          <button id="saveRoundBtn" onclick="saveCurrentRoundToHistory()"
-            class="btn-gold pill-chip px-3 py-1 rounded-lg text-[11px] font-bold shrink-0">
-            保存
-          </button>
-          <button onclick="openNewRoundModal()"
-            class="pill-chip px-2.5 py-1 rounded-lg text-[11px] font-bold surface-subtle hover:border-emerald-500 text-[var(--foreground)] shrink-0">
-            ＋ 新規
-          </button>
-        </div>
-      </div>
-
-      <!-- Compact Segmented Control Navigation -->
-      <nav class="seg flex items-center gap-0.5 sm:gap-1 p-1 rounded-xl w-full" role="tablist">
-        <button data-tab="hole" class="tab-btn flex-1 min-w-0 px-1 sm:px-2.5 py-1.5 rounded-lg text-[10.5px] sm:text-xs font-bold transition-all whitespace-nowrap text-center">ホール入力</button>
-        <button data-tab="card" class="tab-btn flex-1 min-w-0 px-1 sm:px-2.5 py-1.5 rounded-lg text-[10.5px] sm:text-xs font-bold transition-all whitespace-nowrap text-center">スコアカード</button>
-        <button data-tab="olympic" class="tab-btn flex-1 min-w-0 px-1 sm:px-2.5 py-1.5 rounded-lg text-[10.5px] sm:text-xs font-bold transition-all whitespace-nowrap text-center">オリンピック</button>
-        <button data-tab="history" class="tab-btn px-2 sm:px-3 shrink-0 py-1.5 rounded-lg text-[10.5px] sm:text-xs font-bold transition-all whitespace-nowrap text-center">履歴</button>
-        <button data-tab="settings" class="tab-btn px-2 sm:px-3 shrink-0 py-1.5 rounded-lg text-[10.5px] sm:text-xs font-bold transition-all whitespace-nowrap text-center">設定</button>
-      </nav>
-    </header>
-
-    <!-- Tab Panels -->
+    <!-- Main Content (Setup Screen or Active Tab Panel) -->
     <main id="mainContent" class="min-w-0"></main>
+
+    <!-- Compact Bottom Action Bar (shown during active round) -->
+    <footer id="playFooter" class="hidden surface-card rounded-xl px-2.5 py-1.5 flex items-center justify-between gap-2">
+      <button onclick="switchTab('settings')" class="flex items-center gap-1.5 min-w-0 text-left">
+        <img src="./icon-192.png" alt="TAIHEIYO GOLF" class="w-5 h-5 rounded-md object-cover shrink-0" />
+        <span id="footerMeta" class="text-[11px] font-semibold text-[var(--muted-foreground)] tabular-nums truncate"></span>
+      </button>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button id="saveRoundBtn" onclick="saveCurrentRoundToHistory()"
+          class="btn-gold pill-chip px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0">
+          保存
+        </button>
+        <button onclick="openNewRoundModal()"
+          class="pill-chip px-2 py-1 rounded-lg text-[11px] font-bold surface-subtle hover:border-emerald-500 text-[var(--foreground)] shrink-0">
+          ＋新規
+        </button>
+        <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="テーマ切替" title="ライト／ダーク切替"
+          class="pill-chip w-7 h-7 rounded-lg surface-subtle flex items-center justify-center text-xs shrink-0">
+          🌙
+        </button>
+      </div>
+    </footer>
   </div>
 
   <!-- New Round Modal -->
@@ -633,6 +614,7 @@
         courseId: 'gotenba',
         variantId: 'std',
         roundDate: getTodayStr(),
+        roundStarted: false,
         currentRoundId: null,
         activeTab: 'hole',
         theme: 'system', // 'system' | 'light' | 'dark'
@@ -680,9 +662,17 @@
           : def.holes;
         const roundHistory = Array.isArray(parsed.roundHistory) ? parsed.roundHistory : [];
         const theme = ['system', 'light', 'dark'].includes(parsed.theme) ? parsed.theme : 'system';
+        const hasEdits = holes.some(h =>
+          h.scores.some(v => v !== null) ||
+          Object.values(h.medals).some(v => v !== null) ||
+          h.name.some(Boolean) ||
+          h.nearPin !== null
+        );
+        const roundStarted = typeof parsed.roundStarted === 'boolean' ? parsed.roundStarted : hasEdits;
         return {
           ...def,
           ...parsed,
+          roundStarted,
           theme,
           rosterVersion: 2,
           roundDate: parsed.roundDate || getTodayStr(),
@@ -718,12 +708,11 @@
       root.classList.toggle('light', !dark);
       const meta = document.getElementById('themeColorMeta');
       if (meta) meta.setAttribute('content', dark ? '#111413' : '#f6f7f6');
-      const btn = document.getElementById('themeToggleBtn');
-      if (btn) {
+      document.querySelectorAll('#themeToggleBtn, #setupThemeToggleBtn').forEach(btn => {
         btn.textContent = dark ? '☀️' : '🌙';
         btn.title = dark ? 'ライトモードに切替' : 'ダークモードに切替';
         btn.setAttribute('aria-label', btn.title);
-      }
+      });
     }
 
     window.toggleTheme = function () {
@@ -927,40 +916,139 @@
     }
 
     // =========================================================================
-    // コース選択UI 初期化
+    // コース選択ヘルパー & 初期セットアップ画面
     // =========================================================================
-    function renderCourseSelectors() {
-      const dateInput = document.getElementById('roundDateInput');
-      if (dateInput) dateInput.value = state.roundDate || getTodayStr();
-
-      const courseSelect = document.getElementById('courseSelect');
+    function buildCourseOptionsHtml(selectedCourseId) {
       const areas = [...new Set(TAIHEIYO_COURSES.map(c => c.area))];
-      courseSelect.innerHTML = areas.map(area => {
+      return areas.map(area => {
         const items = TAIHEIYO_COURSES.filter(c => c.area === area);
         return `<optgroup label="${area}エリア (${items.length})">` +
-          items.map(c => `<option value="${c.id}" ${c.id === state.courseId ? 'selected' : ''}>${c.name} (${c.pref})</option>`).join('') +
+          items.map(c => `<option value="${c.id}" ${c.id === selectedCourseId ? 'selected' : ''}>${c.name} (${c.pref})</option>`).join('') +
           `</optgroup>`;
       }).join('');
+    }
 
+    function updateFooterMeta() {
+      const footerMeta = document.getElementById('footerMeta');
+      if (!footerMeta) return;
       const course = getCourse();
-      const subSelect = document.getElementById('subCourseSelect');
-      if (course.variants.length > 1) {
-        subSelect.classList.remove('hidden');
-        subSelect.innerHTML = course.variants.map(v =>
-          `<option value="${v.id}" ${v.id === state.variantId ? 'selected' : ''}>${v.label}</option>`
-        ).join('');
-      } else {
-        subSelect.classList.add('hidden');
-      }
+      const variant = getVariant();
+      const dateStr = (state.roundDate || getTodayStr()).replace(/^\d{4}-/, '').replace('-', '/');
+      const sub = course.variants.length > 1 ? ` ${variant.label}` : '';
+      footerMeta.textContent = `${course.name}${sub} · ${dateStr}`;
+    }
 
+    function renderSetupScreen() {
+      const course = getCourse();
       const variant = getVariant();
       const outPar = variant.holes.slice(0, 9).reduce((a, b) => a + b.p, 0);
       const inPar = variant.holes.slice(9, 18).reduce((a, b) => a + b.p, 0);
       const outY = variant.holes.slice(0, 9).reduce((a, b) => a + b.y, 0);
       const inY = variant.holes.slice(9, 18).reduce((a, b) => a + b.y, 0);
 
-      document.getElementById('courseMeta').innerHTML =
-        `${course.name} · ${(outY + inY).toLocaleString()}Y · PAR ${outPar + inPar} · CR ${variant.cr}`;
+      const subSelectHtml = course.variants.length > 1 ? `
+        <select aria-label="サブコース選択" onchange="updateRoundSubCourse(this.value)"
+          class="w-full surface-subtle rounded-xl px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+          ${course.variants.map(v => `<option value="${v.id}" ${v.id === state.variantId ? 'selected' : ''}>${v.label}</option>`).join('')}
+        </select>
+      ` : '';
+
+      return `
+        <div class="max-w-md mx-auto space-y-2.5 pt-1">
+          <!-- セットアップ用ブランドバナー -->
+          <div class="hero rounded-2xl px-3.5 py-3 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img src="./icon-192.png" alt="TAIHEIYO GOLF"
+                class="w-11 h-11 rounded-xl object-cover shadow-lg ring-2 ring-white/20 shrink-0" />
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <h1 class="hero-title leading-none truncate">TAIHEIYO GOLF</h1>
+                  <span class="badge-gold px-2 py-0.5 rounded-full text-[9px] font-bold shrink-0">Ryosuke</span>
+                </div>
+                <div class="text-[11px] opacity-80 tabular-nums truncate mt-1">
+                  ${course.name} · ${(outY + inY).toLocaleString()}Y · PAR ${outPar + inPar}
+                </div>
+              </div>
+            </div>
+            <button id="setupThemeToggleBtn" onclick="toggleTheme()" aria-label="テーマ切替" title="ライト／ダーク切替"
+              class="pill-chip w-8 h-8 rounded-lg surface-subtle flex items-center justify-center text-sm shrink-0">
+              ${isDarkActive() ? '☀️' : '🌙'}
+            </button>
+          </div>
+
+          <!-- ラウンド初期設定カード -->
+          <div class="surface-card rounded-2xl p-4 space-y-3.5">
+            <div class="text-sm font-extrabold tracking-tight">⛳ ラウンド準備</div>
+
+            <!-- プレー日 -->
+            <label class="block space-y-1">
+              <span class="text-xs font-bold text-[var(--muted-foreground)]">プレー日</span>
+              <input type="date" value="${escapeHtml(state.roundDate || getTodayStr())}" onchange="updateRoundDate(this.value)"
+                class="w-full surface-subtle rounded-xl px-3 py-2 text-sm font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+            </label>
+
+            <!-- コース選択 -->
+            <div class="space-y-1.5">
+              <span class="block text-xs font-bold text-[var(--muted-foreground)]">ゴルフ場（太平洋クラブ 19コース）</span>
+              <select aria-label="コース選択" onchange="updateRoundCourse(this.value)"
+                class="w-full surface-subtle rounded-xl px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+                ${buildCourseOptionsHtml(state.courseId)}
+              </select>
+              ${subSelectHtml}
+            </div>
+
+            <!-- 人数 & 同伴者 -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-[var(--muted-foreground)]">メンバー</span>
+                <div class="flex items-center gap-1">
+                  ${[2, 3, 4].map(cnt => `
+                    <button type="button" onclick="setPlayerCount(${cnt})" class="px-2.5 py-0.5 rounded-md text-xs font-bold border ${
+                      state.playerCount === cnt
+                        ? 'bg-emerald-600 text-white border-emerald-600'
+                        : 'surface-subtle text-[var(--muted-foreground)]'
+                    }">${cnt}人</button>
+                  `).join('')}
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                ${Array.from({ length: state.playerCount }, (_, idx) => {
+                  if (idx === 0) {
+                    return `
+                      <div class="flex items-center gap-1.5 min-w-0">
+                        <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">1</span>
+                        <div class="flex-1 surface-subtle rounded-lg px-2.5 py-1.5 text-sm font-bold truncate">${escapeHtml(SELF_NAME)}</div>
+                      </div>
+                    `;
+                  }
+                  const opts = [...new Set([...state.registeredPlayers, state.players[idx]])];
+                  return `
+                    <div class="flex items-center gap-1.5 min-w-0">
+                      <span class="w-5 h-5 rounded-full surface-subtle flex items-center justify-center text-[10px] font-bold shrink-0">${idx + 1}</span>
+                      <select aria-label="メンバー${idx + 1}" onchange="selectPlayerFromRoster(${idx}, this.value)"
+                        class="flex-1 surface-subtle rounded-lg px-2 py-1.5 text-sm font-semibold min-w-0">
+                        ${opts.map(n => `<option value="${escapeHtml(n)}" ${n === state.players[idx] ? 'selected' : ''}>${escapeHtml(n)}</option>`).join('')}
+                      </select>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <button onclick="startRound()"
+              class="w-full pill-chip py-3 rounded-xl text-sm font-extrabold bg-emerald-600 text-white shadow-sm">
+              ⛳ スコア入力をスタート
+            </button>
+
+            ${state.roundHistory.length > 0 ? `
+              <button onclick="openHistoryFromSetup()"
+                class="w-full py-2 rounded-xl text-xs font-bold surface-subtle text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+                📈 過去のラウンド履歴を見る (${state.roundHistory.length}件)
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
     }
 
     function renderTabs() {
@@ -1541,6 +1629,13 @@
     // =========================================================================
     function renderSettingsTab() {
       const rules = state.rules;
+      const course = getCourse();
+      const subSelectHtml = course.variants.length > 1 ? `
+        <select aria-label="サブコース選択" onchange="updateRoundSubCourse(this.value)"
+          class="w-full surface-subtle rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+          ${course.variants.map(v => `<option value="${v.id}" ${v.id === state.variantId ? 'selected' : ''}>${v.label}</option>`).join('')}
+        </select>
+      ` : '';
       const rosterChips = state.registeredPlayers.map((name, rIdx) => `
         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full surface-subtle text-[11px] font-medium">
           <span>${escapeHtml(name)}</span>
@@ -1551,8 +1646,24 @@
 
       return `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-          <!-- 左カラム: プレーヤー名簿・参加者・データ管理 -->
+          <!-- 左カラム: コース・プレーヤー名簿・参加者・データ管理 -->
           <div class="space-y-2.5 min-w-0">
+            <div class="surface-card rounded-2xl p-3 space-y-2">
+              <div class="flex items-center justify-between">
+                <h2 class="text-xs font-bold">⛳ コース・プレー日</h2>
+                <button onclick="openSetupScreen()" class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">初期設定画面へ</button>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <input type="date" aria-label="プレー日" value="${escapeHtml(state.roundDate || getTodayStr())}" onchange="updateRoundDate(this.value)"
+                  class="surface-subtle rounded-lg px-2.5 py-1.5 text-xs font-semibold tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/40" />
+                <select aria-label="コース選択" onchange="updateRoundCourse(this.value)"
+                  class="flex-1 min-w-0 surface-subtle rounded-lg px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40">
+                  ${buildCourseOptionsHtml(state.courseId)}
+                </select>
+              </div>
+              ${subSelectHtml}
+            </div>
+
             <div class="surface-card rounded-2xl p-3 space-y-2">
               <h2 class="text-xs font-bold">📋 登録プレーヤー名簿（同伴者）</h2>
               <form onsubmit="addRegisteredPlayer(event)" class="flex gap-1.5 min-w-0">
@@ -1831,6 +1942,7 @@
       state.currentRoundId = null;
       state.holes = createEmptyHolesData();
       state.currentHole = 0;
+      state.roundStarted = true;
       state.activeTab = 'hole';
       modalDraft = null;
       saveState();
@@ -1838,13 +1950,79 @@
       render();
     };
 
+    window.startRound = () => {
+      state.roundStarted = true;
+      state.activeTab = 'hole';
+      saveState();
+      render();
+    };
+
+    window.openSetupScreen = () => {
+      state.roundStarted = false;
+      saveState();
+      render();
+    };
+
+    window.openHistoryFromSetup = () => {
+      state.roundStarted = true;
+      state.activeTab = 'history';
+      saveState();
+      render();
+    };
+
+    window.switchTab = (tab) => {
+      state.activeTab = tab;
+      saveState();
+      render();
+    };
+
+    window.updateRoundDate = (val) => {
+      state.roundDate = val || getTodayStr();
+      saveState();
+      updateFooterMeta();
+    };
+
+    window.updateRoundCourse = (courseId) => {
+      state.courseId = courseId;
+      const c = getCourse();
+      state.variantId = c.variants[0].id;
+      saveState();
+      render();
+    };
+
+    window.updateRoundSubCourse = (variantId) => {
+      state.variantId = variantId;
+      saveState();
+      render();
+    };
+
     function render() {
       state.players[0] = SELF_NAME;
-      renderCourseSelectors();
+      const topNav = document.getElementById('topNav');
+      const playFooter = document.getElementById('playFooter');
+      const main = document.getElementById('mainContent');
+
+      if (!state.roundStarted) {
+        if (topNav) topNav.classList.add('hidden');
+        if (playFooter) playFooter.classList.add('hidden');
+        if (main.dataset.tab !== 'setup') {
+          main.dataset.tab = 'setup';
+          main.classList.remove('view-enter');
+          void main.offsetWidth;
+          main.classList.add('view-enter');
+        }
+        main.innerHTML = renderSetupScreen();
+        applyTheme();
+        return;
+      }
+
+      if (topNav) topNav.classList.remove('hidden');
+      if (playFooter) playFooter.classList.remove('hidden');
+      updateFooterMeta();
       renderTabs();
       const saveBtn = document.getElementById('saveRoundBtn');
       if (saveBtn) saveBtn.textContent = state.currentRoundId ? '更新' : '保存';
-      const main = document.getElementById('mainContent');
+
       if (main.dataset.tab !== state.activeTab) {
         main.dataset.tab = state.activeTab;
         main.classList.remove('view-enter');
@@ -1916,6 +2094,7 @@
       state.players = [...rec.snapshot.players];
       state.players[0] = SELF_NAME;
       state.holes = JSON.parse(JSON.stringify(rec.snapshot.holes));
+      state.roundStarted = true;
       state.activeTab = 'card';
       saveState();
       render();
@@ -2061,6 +2240,7 @@
       state.currentHole = 0;
       state.currentRoundId = null;
       state.roundDate = getTodayStr();
+      state.roundStarted = false;
       pendingResetRound = false;
       saveState();
       render();
@@ -2107,31 +2287,13 @@
       if (inP3[0] !== undefined) state.holes[inP3[0]].nearPin = 1;
       if (inP3[1] !== undefined) state.holes[inP3[1]].nearPin = 0;
 
+      state.roundStarted = true;
       state.activeTab = 'olympic';
       saveState();
       render();
     };
 
     // Event listeners
-    document.getElementById('roundDateInput').addEventListener('change', (e) => {
-      state.roundDate = e.target.value || getTodayStr();
-      saveState();
-    });
-
-    document.getElementById('courseSelect').addEventListener('change', (e) => {
-      state.courseId = e.target.value;
-      const c = getCourse();
-      state.variantId = c.variants[0].id;
-      saveState();
-      render();
-    });
-
-    document.getElementById('subCourseSelect').addEventListener('change', (e) => {
-      state.variantId = e.target.value;
-      saveState();
-      render();
-    });
-
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         state.activeTab = btn.dataset.tab;
